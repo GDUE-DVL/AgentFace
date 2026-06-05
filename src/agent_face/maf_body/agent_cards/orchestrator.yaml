@@ -1,0 +1,31 @@
+# A2A Agent Card — OrchestratorAgent
+# Defines the orchestrator's capabilities and communication endpoints
+# for Agent-to-Agent (A2A) protocol discovery.
+
+name: orchestrator
+version: "1.0.0"
+description: >
+  Central orchestrator agent for the AgentFace beautification system.
+  Coordinates SafetyGuard, Multimodal, and Beautification agents
+  in a diamond DAG topology.
+
+capabilities:
+  - task_routing
+  - safety_coordination
+  - result_aggregation
+  - retry_management
+
+# A2A endpoint (internal, not exposed externally)
+url: http://localhost:8000/internal/a2a/orchestrator
+
+# Task types this agent can handle
+supported_tasks:
+  - type: analyze_image
+    description: Analyze a facial image and suggest beautification parameters
+    input_schema: analysis_request
+    output_schema: analysis_result
+
+  - type: beautify_image
+    description: Apply beautification parameters to a facial image
+    input_schema: beautification_request
+    output_schema: beautified_image

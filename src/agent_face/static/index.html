@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgentFace · 智能美颜助手</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f5f7;
+  --card: #fff;
+  --text: #1d1d1f;
+  --dim: #86868b;
+  --blue: #0071e3;
+  --blue-light: #e8f2fd;
+  --green: #34c759;
+  --green-light: #e8f8ed;
+  --red: #ff3b30;
+  --orange: #ff9500;
+  --yellow: #ffcc00;
+  --purple: #af52de;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: "Inter", "Noto Sans SC", -apple-system, sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; -webkit-font-smoothing: antialiased;
+}
+
+/* ── Nav ── */
+nav {
+  background: rgba(255,255,255,.8); backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  padding: 0 32px; height: 52px;
+  display: flex; align-items: center; gap: 16px;
+  position: sticky; top: 0; z-index: 100;
+}
+nav .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+nav .logo span { color: var(--blue); }
+nav .sep { width: 1px; height: 20px; background: #ddd; }
+nav .tab {
+  font-size: 13px; font-weight: 500; color: var(--dim); cursor: pointer;
+  padding: 6px 12px; border-radius: 6px; transition: all .15s; border: none; background: none;
+}
+nav .tab:hover, nav .tab.on { color: var(--text); background: #f0f0f0; }
+nav .spacer { flex:1; }
+nav .user-chip {
+  display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px;
+  border-radius: 24px; background: #f0f0f0; cursor: pointer; font-size: 13px; font-weight: 500;
+}
+nav .user-chip .av {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 12px; font-weight: 600;
+}
+nav .user-chip .live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+
+/* ── Layout ── */
+.page { display: none; }
+.page.on { display: block; }
+
+.container {
+  max-width: 1100px; margin: 0 auto; padding: 32px 24px;
+}
+
+/* ── Workflow Page ── */
+.workflow-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; align-items: start;
+}
+.card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 28px;
+}
+.card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+/* Upload */
+.dropzone {
+  border: 2px dashed #d2d2d7; border-radius: var(--radius);
+  padding: 56px 24px; text-align: center; cursor: pointer;
+  transition: all .2s; background: #fafafa;
+}
+.dropzone:hover, .dropzone.drag { border-color: var(--blue); background: var(--blue-light); }
+.dropzone .dz-icon { font-size: 52px; margin-bottom: 12px; }
+.dropzone .dz-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.dropzone .dz-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
+.dropzone input { display: none; }
+
+.preview-img {
+  width: 100%; max-height: 320px; object-fit: contain;
+  border-radius: var(--radius-sm);
+}
+
+/* Inputs & Buttons */
+.inp {
+  width: 100%; padding: 12px 16px; border: 1px solid #d2d2d7; border-radius: 12px;
+  font-size: 14px; font-family: inherit; outline: none; transition: all .2s;
+}
+.inp:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 12px 24px; border: none; border-radius: 12px;
+  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .2s;
+}
+.btn:disabled { opacity: .45; pointer-events: none; }
+.btn-primary { background: var(--blue); color: #fff; }
+.btn-primary:hover { background: #0062cc; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,113,227,.3); }
+.btn-outline { background: none; color: var(--blue); border: 1px solid #d2d2d7; }
+.btn-outline:hover { background: var(--blue-light); border-color: var(--blue); }
+.btn-full { width: 100%; }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.flex { display: flex; } .gap-8 { gap: 8px; }
+
+/* Spinner */
+.loading-box { text-align: center; padding: 48px 20px; }
+.spinner {
+  width: 44px; height: 44px; margin: 0 auto 20px;
+  border: 3px solid #e8eaed; border-top-color: var(--blue);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-box .dots::after {
+  content: ''; animation: dots 1.5s steps(4,end) infinite;
+}
+@keyframes dots { 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+
+/* Analysis */
+.analysis-box {
+  background: #f8f9fa; border-radius: var(--radius-sm); padding: 18px;
+  font-size: 14px; line-height: 2;
+}
+.analysis-box .kv { display: flex; }
+.analysis-box .k { color: var(--dim); min-width: 52px; }
+.analysis-box .v { font-weight: 500; }
+.analysis-box .reasoning {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e5ea;
+  color: var(--dim); font-size: 13px; line-height: 1.6;
+}
+
+.conf-bar {
+  display: inline-block; height: 5px; border-radius: 3px; vertical-align: middle; margin-left: 6px;
+}
+.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 1px; }
+.tag-ok { background: var(--green-light); color: var(--green); }
+.tag-warn { background: #fff3e0; color: var(--orange); }
+
+/* Params */
+.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.param-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border-radius: var(--radius-sm);
+  background: #f8f9fa; font-size: 13px;
+}
+.param-item label { width: 48px; flex-shrink: 0; font-weight: 500; }
+.param-item input[type=range] {
+  flex:1; height: 4px; -webkit-appearance: none; appearance: none;
+  background: linear-gradient(to right, var(--blue) var(--pct), #e0e0e0 var(--pct));
+  border-radius: 2px; outline: none;
+}
+.param-item input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; border: 2px solid var(--blue);
+  cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.12);
+}
+.param-item .val { width: 32px; text-align: right; font-weight: 700; font-size: 13px; color: var(--blue); }
+
+/* Result */
+.compare-box {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.compare-box img {
+  width: 100%; border-radius: var(--radius-sm);
+  max-height: 300px; object-fit: contain;
+}
+.compare-box .side { text-align: center; }
+.compare-box .side .label {
+  font-size: 12px; font-weight: 600; color: var(--dim);
+  margin-top: 8px; text-transform: uppercase; letter-spacing: .5px;
+}
+
+/* Stars */
+.stars-row { display: flex; gap: 4px; justify-content: center; }
+.stars-row button {
+  font-size: 40px; padding: 4px 10px; background: none; border: none;
+  cursor: pointer; transition: all .12s; color: #d2d2d7; line-height: 1;
+}
+.stars-row button:hover { color: var(--yellow); transform: scale(1.18); }
+.stars-row button.on { color: var(--yellow); }
+
+/* Done */
+.done-card {
+  background: var(--green-light); border-radius: var(--radius-sm);
+  padding: 24px; text-align: center;
+}
+.done-card .icon { font-size: 44px; }
+.done-card h4 { font-size: 16px; font-weight: 600; color: var(--green); margin: 8px 0; }
+.done-card p { font-size: 13px; color: var(--dim); }
+
+/* ── Dashboard Page ── */
+.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px; text-align: center;
+}
+.stat-card .num { font-size: 36px; font-weight: 700; color: var(--blue); }
+.stat-card .label { font-size: 12px; color: var(--dim); margin-top: 4px; }
+
+.pref-card {
+  background: var(--card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 24px;
+}
+.pref-bar-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.pref-bar-row:last-child { border-bottom: none; }
+.pref-bar-row .name { width: 56px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+.pref-bar-row .track {
+  flex: 1; height: 8px; border-radius: 4px; background: #f0f0f0; position: relative; overflow: hidden;
+}
+.pref-bar-row .track .fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--blue), var(--purple));
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+}
+.pref-bar-row .num { width: 36px; text-align: right; font-size: 13px; font-weight: 600; color: var(--blue); }
+
+.history-list { max-height: 400px; overflow-y: auto; }
+.history-item {
+  padding: 14px; border-radius: var(--radius-sm);
+  border: 1px solid #f0f0f0; margin-bottom: 8px; font-size: 13px;
+  transition: all .15s; cursor: default;
+}
+.history-item:hover { background: #fafafa; }
+.history-item .top { display: flex; justify-content: space-between; align-items: center; }
+.history-item .date { color: var(--dim); font-size: 12px; }
+.history-item .score { font-weight: 600; }
+.history-item .params { color: var(--dim); font-size: 12px; margin-top: 4px; }
+
+/* User modal */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(0,0,0,.3);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+.modal-box {
+  background: var(--card); border-radius: var(--radius); padding: 28px;
+  width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.15);
+}
+.modal-box h3 { font-size: 16px; margin-bottom: 16px; }
+.hidden { display: none !important; }
+
+@media(max-width:768px) {
+  .workflow-grid, .stats-grid { grid-template-columns: 1fr; }
+  .param-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">✨ <span>Agent</span>Face</div>
+  <div class="sep"></div>
+  <button class="tab on" data-page="workflow">美颜</button>
+  <button class="tab" data-page="dashboard">我的数据</button>
+  <span class="spacer"></span>
+  <div class="user-chip" id="userChip" onclick="$('#userModal').classList.remove('hidden')">
+    <div class="av" id="navAvatar">?</div>
+    <span id="navName">---</span>
+    <span class="live"></span>
+  </div>
+</nav>
+
+<!-- ═══════════════ WORKFLOW PAGE ═══════════════ -->
+<div class="page on" id="page-workflow">
+<div class="container">
+<div class="workflow-grid">
+
+  <!-- LEFT -->
+  <div class="card">
+    <h3>📷 上传照片</h3>
+    <div class="dropzone" id="dropzone">
+      <div class="dz-icon">🖼️</div>
+      <div class="dz-title">点击或拖拽上传人像照片</div>
+      <div class="dz-sub">JPG / PNG / WEBP · 最多 10MB</div>
+      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+    </div>
+    <img id="preview" class="preview-img hidden mt-12" src="" alt="">
+
+    <div class="flex gap-8 mt-12">
+      <input class="inp" id="promptInput" placeholder="美颜提示词（可选），如：自然清新">
+    </div>
+    <button class="btn btn-primary btn-full mt-12" id="startBtn" disabled>开始分析</button>
+
+    <div id="analysisSection" class="hidden mt-16">
+      <h3>🤖 MIMO 分析结果</h3>
+      <div id="analysisCard"></div>
+      <h3 class="mt-16">📐 调整参数</h3>
+      <div class="param-grid" id="paramGrid"></div>
+      <div class="flex gap-8 mt-16">
+        <button class="btn btn-primary" id="confirmBtn" style="flex:1">确认方案</button>
+        <button class="btn btn-outline" id="retryBtn" style="flex:1">重新分析</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="card">
+    <h3>✨ 美颜结果</h3>
+
+    <div id="resultEmpty" style="text-align:center;padding:80px 20px;color:var(--dim)">
+      <div style="font-size:56px">✨</div>
+      <div style="margin-top:12px;font-size:14px">等待确认美颜方案…</div>
+    </div>
+
+    <div id="resultSection" class="hidden">
+      <div class="compare-box">
+        <div class="side">
+          <img id="beforeImg" src="" alt="原图">
+          <div class="label">原图</div>
+        </div>
+        <div class="side">
+          <img id="afterImg" src="" alt="美颜后">
+          <div class="label">美颜后</div>
+        </div>
+      </div>
+      <button class="btn btn-outline btn-full mt-12" id="downloadBtn">下载结果</button>
+    </div>
+
+    <div id="feedbackSection" class="hidden mt-16">
+      <h3>满意吗？</h3>
+      <div class="stars-row" id="starsRow">
+        <button data-score="1">☆</button>
+        <button data-score="2">☆</button>
+        <button data-score="3">☆</button>
+        <button data-score="4">☆</button>
+        <button data-score="5">☆</button>
+      </div>
+      <input class="inp mt-12" id="commentInput" placeholder="说点什么（可选）">
+      <button class="btn btn-primary btn-full mt-12" id="feedbackBtn">提交反馈</button>
+    </div>
+
+    <div id="completedSection" class="hidden mt-16">
+      <div class="done-card">
+        <div class="icon">🎉</div>
+        <h4>完成！偏好已更新</h4>
+        <p id="doneMsg">下次美颜会更懂你的审美</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+</div>
+
+<!-- ═══════════════ DASHBOARD PAGE ═══════════════ -->
+<div class="page" id="page-dashboard">
+<div class="container">
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="num" id="statSessions">0</div>
+      <div class="label">累计美颜次数</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statAvg">--</div>
+      <div class="label">平均满意度</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statTrend">--</div>
+      <div class="label">最近评分趋势</div>
+    </div>
+  </div>
+
+  <div class="pref-card" style="margin-bottom:20px">
+    <h3 style="margin-bottom:16px">🧠 我的审美偏好</h3>
+    <div id="prefBars"></div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn btn-outline btn-sm" id="resetPrefsBtn">重置偏好</button>
+    </div>
+  </div>
+
+  <div class="pref-card">
+    <h3 style="margin-bottom:16px">📋 美颜历史</h3>
+    <div id="historyList" class="history-list">
+      <div style="text-align:center;padding:40px;color:var(--dim)">加载中…</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════ USER MODAL ═══════════════ -->
+<div class="modal-mask hidden" id="userModal" onclick="if(event.target===this)$('#userModal').classList.add('hidden')">
+  <div class="modal-box">
+    <h3>👤 切换用户</h3>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:12px">每个用户拥有独立的记忆和偏好</p>
+    <input class="inp" id="modalUserId" placeholder="输入用户 ID…">
+    <div class="flex gap-8 mt-12">
+      <button class="btn btn-primary" id="modalSwitchBtn" style="flex:1">切换</button>
+      <button class="btn btn-outline" onclick="$('#userModal').classList.add('hidden')" style="flex:1">取消</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════ GLOBALS ═══════════════
+const API = '/api/v1';
+const $  = s => document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+let sessionId=null, selectedScore=0, resultB64=null, beforeB64=null;
+let currentUser = localStorage.getItem('af_user')||'web-user';
+
+const LABELS = {
+  skin_smoothing:'磨皮', whitening:'美白', eye_enlargement:'大眼',
+  face_slimming:'瘦脸', blush:'腮红', lip_color_adjustment:'唇色',
+  blemish_removal:'祛痘祛斑', nose_reshaping:'鼻子塑形', eyebrow_adjustment:'眉毛'
+};
+
+// ═══════════════ NAVIGATION ═══════════════
+$$('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    $$('.tab').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');
+    $$('.page').forEach(p=>p.classList.remove('on'));
+    $('#page-'+t.dataset.page).classList.add('on');
+    if(t.dataset.page==='dashboard') loadDashboard();
+  });
+});
+
+// ═══════════════ USER ═══════════════
+function applyUser(id) {
+  currentUser=id; localStorage.setItem('af_user',id);
+  $('#navName').textContent=id;
+  $('#navAvatar').textContent=id[0]?.toUpperCase()||'?';
+  $('#userModal').classList.add('hidden');
+  loadUserStats();
+}
+$('#modalSwitchBtn').addEventListener('click',()=>{
+  const v=$('#modalUserId').value.trim(); if(v) applyUser(v);
+});
+$('#modalUserId').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#modalSwitchBtn').click()}});
+
+async function loadUserStats() {
+  try {
+    const r=await fetch(`${API}/users/${currentUser}/preferences`);
+    const d=await r.json();
+    const n=d.total_sessions||0, avg=d.avg_satisfaction||0;
+    const e=avg>=4?'😍':avg>=3?'🙂':avg>0?'😐':'🆕';
+    if($('#page-dashboard').classList.contains('on')) {
+      $('#statSessions').textContent=n;
+      $('#statAvg').textContent=avg.toFixed(1);
+    }
+  }catch(e){}
+}
+applyUser(currentUser);
+
+// ═══════════════ UPLOAD ═══════════════
+const dz=$('#dropzone'), fi=$('#fileInput');
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');loadFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',()=>loadFile(fi.files[0]));
+
+function loadFile(file) {
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const b64=r.result.split(',')[1];
+    beforeB64=b64;
+    $('#preview').src=r.result; $('#preview').classList.remove('hidden');
+    dz.classList.add('hidden');
+    const b=$('#startBtn'); b.disabled=false; b.dataset.b64=b64;
+  };
+  r.readAsDataURL(file);
+}
+
+// ═══════════════ ANALYZE ═══════════════
+$('#startBtn').addEventListener('click',async()=>{
+  const btn=$('#startBtn'); btn.disabled=true;
+  btn.innerHTML='<span class="spinner" style="width:16px;height:16px;border-width:2px;margin:0"></span> 分析中';
+  $('#analysisSection').classList.remove('hidden');
+  $('#analysisCard').innerHTML=`<div class="loading-box"><div class="spinner"></div><div style="color:var(--dim);font-size:14px">MIMO 正在分析你的照片<span class="dots"></span></div></div>`;
+  $('#paramGrid').innerHTML=''; $('#confirmBtn').style.display='';
+
+  try{
+    const r=await fetch(`${API}/sessions`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({image:btn.dataset.b64, user_prompt:$('#promptInput').value||null, user_id:currentUser})
+    });
+    sessionId=(await r.json()).session_id;
+    await poll();
+  }catch(e){
+    $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">出错了：${e.message}</div></div>`;
+    btn.disabled=false; btn.textContent='重试';
+  }
+});
+
+async function poll() {
+  for(let i=0;i<60;i++){
+    await new Promise(r=>setTimeout(r,1500));
+    const r=await fetch(`${API}/sessions/${sessionId}`);
+    const d=await r.json();
+    if(d.analysis_result && d.workflow_stage==='analyzed'){ showAnalysis(d); return; }
+    if(d.workflow_stage==='error'||d.workflow_stage==='failed'){
+      $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">分析失败：${d.error_message||'未知错误'}</div></div>`;
+      $('#startBtn').classList.remove('hidden'); $('#startBtn').disabled=false; $('#startBtn').textContent='重试'; return;
+    }
+  }
+  $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">分析超时，请重试</div></div>`;
+  $('#startBtn').classList.remove('hidden'); $('#startBtn').disabled=false; $('#startBtn').textContent='重试';
+}
+
+function showAnalysis(data) {
+  const ar=data.analysis_result;
+  const isFace=ar.confidence>0 && !ar.detected_issues?.includes('未检测到人脸');
+  $('#startBtn').classList.add('hidden');
+
+  if(!isFace){
+    $('#analysisCard').innerHTML=`<div style="text-align:center;padding:24px;color:var(--red)"><div style="font-size:48px">😕</div><div style="font-size:15px;font-weight:600;margin:8px 0">未检测到人脸</div><div style="font-size:13px;color:var(--dim)">${ar.reasoning||'请上传清晰的人像照片'}</div></div>`;
+    $('#confirmBtn').style.display='none'; return;
+  }
+
+  $('#confirmBtn').style.display='';
+  const pct=(ar.confidence*100).toFixed(0);
+  const bw=Math.max(20,ar.confidence*100);
+  $('#analysisCard').innerHTML=`
+    <div class="kv"><span class="k">肤色</span><span class="v">${ar.skin_tone||'—'}</span></div>
+    <div class="kv"><span class="k">皮肤</span><span class="v">${ar.skin_condition||'—'}</span></div>
+    <div class="kv"><span class="k">光线</span><span class="v">${ar.lighting||'—'}</span></div>
+    <div class="kv"><span class="k">特征</span><span class="v">${ar.detected_features?.join('、')||'无'}</span></div>
+    <div class="kv"><span class="k">问题</span><span class="v">${ar.detected_issues?.join('、')||'无'}
+      ${!ar.detected_issues?.length?'<span class="tag tag-ok">良好</span>':''}</span></div>
+    <div class="kv"><span class="k">置信</span><span class="v">${pct}%
+      <span class="conf-bar" style="width:${bw}px;background:${bw>70?'var(--green)':bw>40?'var(--orange)':'var(--red)'}"></span></span></div>
+    ${ar.reasoning?`<div class="reasoning">💡 ${ar.reasoning}</div>`:''}
+  `;
+
+  const grid=$('#paramGrid'); grid.innerHTML='';
+  const params=ar.suggested_params||{};
+  for(const[k,l]of Object.entries(LABELS)){
+    const v=params[k]??0;
+    const it=document.createElement('div'); it.className='param-item';
+    it.innerHTML=`<label>${l}</label><input type="range" min="0" max="5" step="0.1" value="${v}" data-key="${k}" style="--pct:${v/5*100}%"><span class="val">${v.toFixed(1)}</span>`;
+    it.querySelector('input').addEventListener('input',function(){
+      this.style.setProperty('--pct',this.valueAsNumber/5*100+'%');
+      this.parentElement.querySelector('.val').textContent=this.valueAsNumber.toFixed(1);
+    });
+    grid.appendChild(it);
+  }
+}
+
+// ═══════════════ CONFIRM ═══════════════
+$('#confirmBtn').addEventListener('click',async()=>{
+  const btn=$('#confirmBtn'); btn.disabled=true; btn.textContent='处理中…';
+  const adj={}; $$('#paramGrid input').forEach(s=>adj[s.dataset.key]=s.valueAsNumber);
+  try{
+    const r=await fetch(`${API}/sessions/${sessionId}/confirm`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'adjust',adjustments:adj})
+    });
+    const d=await r.json();
+    if(d.beautified_image){
+      resultB64=d.beautified_image;
+      $('#beforeImg').src=`data:image/jpeg;base64,${beforeB64}`;
+      $('#afterImg').src=`data:image/jpeg;base64,${d.beautified_image}`;
+      $('#resultEmpty').classList.add('hidden');
+      $('#resultSection').classList.remove('hidden');
+      $('#feedbackSection').classList.remove('hidden');
+    }
+  }catch(e){ btn.disabled=false; btn.textContent='确认方案'; }
+});
+
+$('#retryBtn').addEventListener('click',()=>{
+  $('#analysisSection').classList.add('hidden');
+  const b=$('#startBtn'); b.classList.remove('hidden'); b.disabled=false; b.textContent='开始分析';
+});
+
+// ═══════════════ STARS ═══════════════
+$$('#starsRow button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    selectedScore=+b.dataset.score;
+    $$('#starsRow button').forEach(b2=>{
+      const s=+b2.dataset.score;
+      b2.classList.toggle('on',s<=selectedScore);
+      b2.textContent=s<=selectedScore?'★':'☆';
+    });
+  });
+});
+
+// ═══════════════ FEEDBACK ═══════════════
+$('#feedbackBtn').addEventListener('click',async()=>{
+  if(selectedScore<1){alert('请先打分⭐');return;}
+  const btn=$('#feedbackBtn'); btn.disabled=true; btn.textContent='提交中…';
+  try{
+    await fetch(`${API}/sessions/${sessionId}/feedback`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({satisfaction_score:selectedScore,comments:$('#commentInput').value||null})
+    });
+    $('#feedbackSection').classList.add('hidden');
+    $('#completedSection').classList.remove('hidden');
+    const dir=selectedScore>=4?'靠拢':selectedScore>=3?'微调':'远离';
+    $('#doneMsg').textContent=`偏好已向这次方案${dir} · 下次会更懂你`;
+  }catch(e){
+    btn.disabled=false; btn.textContent='提交反馈';
+  }
+});
+
+$('#downloadBtn').addEventListener('click',()=>{
+  if(!resultB64)return;
+  const a=document.createElement('a');
+  a.href=`data:image/jpeg;base64,${resultB64}`; a.download='美颜结果.jpg'; a.click();
+});
+
+// ═══════════════ DASHBOARD ═══════════════
+async function loadDashboard() {
+  try{
+    const r=await fetch(`${API}/users/${currentUser}/preferences`);
+    const d=await r.json();
+    const n=d.total_sessions||0, avg=d.avg_satisfaction||0;
+    $('#statSessions').textContent=n;
+    $('#statAvg').textContent=avg.toFixed(1);
+
+    // Trend icon
+    const trend=d.satisfaction_trend||[];
+    const recent=trend.slice(-5);
+    if(recent.length>0){
+      const avgR=recent.reduce((a,b)=>a+b,0)/recent.length;
+      const dir=avgR>=4?'↑':avgR>=3?'→':'↓';
+      $('#statTrend').textContent=`${dir} ${avgR.toFixed(1)}`;
+    }else{$('#statTrend').textContent='--'}
+
+    // Preference bars
+    const prefs=d.preferences||{};
+    let bars='';
+    for(const[k,l]of Object.entries(LABELS)){
+      const v=prefs[k]??0;
+      bars+=`<div class="pref-bar-row"><span class="name">${l}</span><div class="track"><div class="fill" style="width:${v/5*100}%"></div></div><span class="num">${v.toFixed(1)}</span></div>`;
+    }
+    $('#prefBars').innerHTML=bars||'<div style="text-align:center;color:var(--dim);padding:20px">还没有数据，做完美颜后这里会显示你的偏好</div>';
+
+    // History
+    const hr=await fetch(`${API}/users/${currentUser}/history`);
+    const hd=await hr.json();
+    const sessions=hd.sessions||[];
+    if(sessions.length===0){
+      $('#historyList').innerHTML='<div style="text-align:center;padding:40px;color:var(--dim)">暂无历史记录</div>';
+    }else{
+      let html='';
+      for(const s of sessions.slice(0,20)){
+        const date=s.created_at?new Date(s.created_at).toLocaleDateString('zh-CN'):'—';
+        const score=s.satisfaction_score||'—';
+        const stars=score>=4?'★'.repeat(score):score>=1?'☆'.repeat(5-score)+'★'.repeat(score):'—';
+        html+=`<div class="history-item"><div class="top"><span class="date">${date}</span><span class="score" style="color:${score>=4?'var(--green)':score>=3?'var(--orange)':'var(--red)'}">${stars}</span></div></div>`;
+      }
+      $('#historyList').innerHTML=html;
+    }
+  }catch(e){
+    console.error(e);
+  }
+}
+
+// Reset preferences
+$('#resetPrefsBtn').addEventListener('click', async()=>{
+  if(!confirm('确定要重置所有美颜偏好为默认值吗？历史记录不受影响。')) return;
+  try{
+    await fetch(`${API}/users/${currentUser}/preferences`, {method:'DELETE'});
+    loadDashboard();
+  }catch(e){alert('重置失败: '+e.message);}
+});
+
+// Init
+loadUserStats();
+</script>
+</body>
+</html>

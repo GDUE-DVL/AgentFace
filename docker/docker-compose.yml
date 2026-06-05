@@ -1,0 +1,104 @@
+version: "3.9"
+
+services:
+  # ── AgentFace Main Application ──────────────────────────────
+  agentface:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/agent_face.db
+      - MULTIMODAL_MODEL_URL=http://multimodal:8001
+      - BEAUTIFY_MODEL_URL=http://beautify:8002
+      - MODEL_REQUEST_TIMEOUT=60.0
+      - LOG_LEVEL=info
+      - ENABLE_CONTENT_SAFETY=true
+      - ENABLE_PII_DETECTION=false
+    volumes:
+      - ../data:/app/data
+    depends_on:
+      multimodal:
+        condition: service_healthy
+      beautify:
+        condition: service_healthy
+    networks:
+      - agentface-net
+
+  # ── Multimodal Model Service ────────────────────────────────
+  multimodal:
+    build:
+      context: ../model_services/multimodal_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - MODEL_PATH=/app/model
+      - CUDA_VISIBLE_DEVICES=0
+    volumes:
+      - ../model_services/multimodal_service/model:/app/model
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - agentface-net
+
+  # ── Beautification Model Service ────────────────────────────
+  beautify:
+    build:
+      context: ../model_services/beautify_service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - MODEL_PATH=/app/model
+      - CUDA_VISIBLE_DEVICES=1
+    volumes:
+      - ../model_services/beautify_service/model:/app/model
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - agentface-net
+
+  # ── PostgreSQL (for production memory) ───────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: agent_face
+      POSTGRES_USER: agentface
+      POSTGRES_PASSWORD: agentface_secret
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - agentface-net
+    profiles:
+      - production  # Only started with --profile production
+
+networks:
+  agentface-net:
+    driver: bridge
+
+volumes:
+  pgdata:
