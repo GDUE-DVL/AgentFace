@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>AgentFace Demo · Curated Beauty Flow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f6efe8;
+  --panel: rgba(255, 250, 245, 0.84);
+  --panel-strong: #fffaf5;
+  --text: #162033;
+  --text-soft: #6a7280;
+  --line: rgba(22, 32, 51, 0.08);
+  --accent: #ef7b5b;
+  --accent-soft: rgba(239, 123, 91, 0.14);
+  --accent-deep: #d96047;
+  --teal: #179087;
+  --teal-soft: rgba(23, 144, 135, 0.14);
+  --gold: #d9ad62;
+  --shadow-lg: 0 20px 54px rgba(58, 38, 22, 0.1);
+  --shadow-md: 0 12px 28px rgba(58, 38, 22, 0.08);
+  --radius-xl: 30px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255, 216, 180, 0.64), transparent 26%),
+    radial-gradient(circle at top right, rgba(107, 185, 176, 0.22), transparent 22%),
+    linear-gradient(180deg, #fbf7f1 0%, #f4ede5 56%, #eee6dd 100%);
+  color: var(--text);
+  font-family: "Manrope", "Noto Sans SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(20px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  top: -100px;
+  right: -120px;
+  width: 360px;
+  height: 360px;
+  background: rgba(239, 123, 91, 0.14);
+}
+
+body::after {
+  left: -120px;
+  bottom: 8%;
+  width: 320px;
+  height: 320px;
+  background: rgba(23, 144, 135, 0.12);
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 18px 22px 40px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 999px;
+  background: rgba(255, 249, 243, 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-md);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.18)),
+    linear-gradient(135deg, var(--accent), #f2b36a);
+  color: #fff7f2;
+  font: 700 15px/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.08em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
+}
+
+.brand-copy strong {
+  display: block;
+  font: 700 1.05rem/1.1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.brand-copy span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mode-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid var(--line);
+  color: var(--text);
+  font: 700 0.82rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mode-pill::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 5px rgba(23, 144, 135, 0.12);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(255, 249, 244, 0.86)),
+    var(--panel);
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-lg);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), transparent 45%);
+}
+
+.hero {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(300px, 380px);
+  margin-top: 24px;
+  padding: 30px;
+}
+
+.eyebrow {
+  font: 700 0.74rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero h1 {
+  margin-top: 14px;
+  max-width: 12ch;
+  font: 800 clamp(2.4rem, 5vw, 4.3rem)/0.96 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.06em;
+}
+
+.hero p {
+  margin-top: 16px;
+  max-width: 62ch;
+  color: var(--text-soft);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.hero-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.hero-points span,
+.rule-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--line);
+  color: var(--text-soft);
+  font-size: 0.86rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  cursor: pointer;
+  font: 800 0.94rem/1 "Manrope", "Noto Sans SC", sans-serif;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.56;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary {
+  color: #fff9f5;
+  background: linear-gradient(135deg, var(--accent), #f2a15d);
+  box-shadow: 0 18px 34px rgba(239, 123, 91, 0.24);
+}
+
+.btn-secondary {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.hero-rules {
+  display: grid;
+  gap: 12px;
+}
+
+.rule-card {
+  padding: 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid var(--line);
+}
+
+.rule-card strong {
+  display: block;
+  font: 800 1.28rem/1.05 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.rule-card p {
+  margin-top: 10px;
+  color: var(--text-soft);
+  line-height: 1.7;
+  font-size: 0.94rem;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  margin-top: 24px;
+  align-items: start;
+}
+
+.demo-main {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+
+.card {
+  padding: 28px;
+}
+
+.panel-heading,
+.section-divider {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.panel-heading h2,
+.section-divider h3 {
+  margin-top: 8px;
+  font: 800 1.46rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.section-divider.tight {
+  margin-top: 24px;
+}
+
+.micro-copy,
+.panel-note,
+.field-note {
+  color: var(--text-soft);
+  font-size: 0.92rem;
+  line-height: 1.75;
+}
+
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.sample-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.64);
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.sample-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.sample-card.is-selected {
+  border-color: rgba(239, 123, 91, 0.32);
+  box-shadow: inset 0 0 0 1px rgba(239, 123, 91, 0.18), var(--shadow-md);
+  background: linear-gradient(180deg, rgba(255, 248, 242, 0.96), rgba(255, 242, 233, 0.86));
+}
+
+.sample-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1.1;
+  object-fit: cover;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.54);
+}
+
+.sample-card strong {
+  font-size: 1rem;
+}
+
+.sample-card p {
+  color: var(--text-soft);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text-soft);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.tag-warn {
+  background: rgba(239, 123, 91, 0.12);
+  color: var(--accent-deep);
+  border-color: rgba(239, 123, 91, 0.08);
+}
+
+.selected-stage {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+  gap: 18px;
+  padding: 18px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--line);
+}
+
+.selected-stage img {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  max-height: 440px;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.selected-copy {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.selected-copy h3 {
+  font: 800 1.6rem/1.04 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.selected-copy p {
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.analysis-shell,
+.param-shell,
+.result-shell {
+  margin-top: 20px;
+}
+
+.analysis-box {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid var(--line);
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.analysis-tile {
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 246, 240, 0.88));
+  border: 1px solid rgba(22, 32, 51, 0.05);
+}
+
+.analysis-tile span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.analysis-tile strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+
+.analysis-group {
+  margin-top: 18px;
+}
+
+.list-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.param-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.param-item {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.param-head,
+.range-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.param-head label {
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.param-level {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.range-row {
+  margin-top: 14px;
+}
+
+.param-item input[type="range"] {
+  --pct: 40%;
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--teal) var(--pct), rgba(22, 32, 51, 0.08) var(--pct), rgba(22, 32, 51, 0.08) 100%);
+}
+
+.param-item input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #fff8f3;
+  background: var(--text);
+  box-shadow: 0 8px 18px rgba(22, 32, 51, 0.18);
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.param-item input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #fff8f3;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 8px 18px rgba(22, 32, 51, 0.18);
+  cursor: pointer;
+}
+
+.val {
+  min-width: 38px;
+  text-align: right;
+  color: var(--accent-deep);
+  font: 800 1rem/1 "Space Grotesk", sans-serif;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.action-row .btn {
+  flex: 1;
+}
+
+.placeholder,
+.done-card {
+  display: grid;
+  align-content: center;
+  min-height: 320px;
+  padding: 30px 26px;
+  border-radius: 26px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 214, 175, 0.32), transparent 46%),
+    rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.placeholder h3,
+.done-card h3 {
+  font: 800 1.38rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.placeholder p,
+.done-card p,
+.result-caption {
+  margin-top: 12px;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.result-orbit {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  margin: 0 auto 18px;
+}
+
+.result-orbit span {
+  position: absolute;
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.result-orbit span:nth-child(1) {
+  inset: 0;
+  border: 1px solid rgba(239, 123, 91, 0.24);
+}
+
+.result-orbit span:nth-child(2) {
+  inset: 18px;
+  border: 1px solid rgba(23, 144, 135, 0.24);
+  animation-delay: 0.3s;
+}
+
+.result-orbit span:nth-child(3) {
+  inset: 38px;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  box-shadow: 0 16px 36px rgba(239, 123, 91, 0.24);
+  animation-delay: 0.6s;
+}
+
+.compare-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.frame-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-soft);
+  font: 700 0.72rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.image-frame {
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(22, 32, 51, 0.07);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.74), rgba(247, 239, 231, 0.92));
+}
+
+.image-frame img {
+  display: block;
+  width: 100%;
+  height: 340px;
+  object-fit: cover;
+}
+
+.side-label {
+  margin-top: 10px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+}
+
+.status-panel {
+  position: sticky;
+  top: 22px;
+  padding: 28px;
+  height: fit-content;
+}
+
+.status-copy {
+  margin-top: 16px;
+}
+
+.status-copy h3 {
+  font: 800 1.5rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.status-copy p {
+  margin-top: 12px;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.signal-card {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(22, 32, 51, 0.05);
+}
+
+.signal-card span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.signal-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.step-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+  transition: 0.22s ease;
+}
+
+.step-index {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(22, 32, 51, 0.06);
+  color: var(--text-soft);
+  font: 700 0.82rem/1 "Space Grotesk", sans-serif;
+}
+
+.step-item strong {
+  display: block;
+  font-size: 0.96rem;
+}
+
+.step-item p {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.step-item.is-active {
+  background: linear-gradient(180deg, rgba(255, 250, 245, 0.96), rgba(255, 242, 231, 0.88));
+  box-shadow: var(--shadow-md);
+}
+
+.step-item.is-active .step-index {
+  background: linear-gradient(135deg, var(--accent), #f2b36a);
+  color: #fff8f2;
+}
+
+.step-item.is-done .step-index {
+  background: linear-gradient(135deg, var(--teal), #56b0a8);
+  color: #fff;
+}
+
+.notice {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  min-width: 260px;
+  max-width: min(420px, calc(100vw - 40px));
+  padding: 14px 16px;
+  border-radius: 18px;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  line-height: 1.6;
+  animation: toastIn 0.22s ease;
+}
+
+.notice.info {
+  background: linear-gradient(135deg, #1b8d84, #3cb4a9);
+}
+
+.notice.success {
+  background: linear-gradient(135deg, #147a72, #2f9e86);
+}
+
+.notice.error {
+  background: linear-gradient(135deg, #c05151, #db7460);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.84;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1180px) {
+  .hero,
+  .demo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 820px) {
+  .shell {
+    padding: 14px 14px 28px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    border-radius: 28px;
+  }
+
+  .hero,
+  .card,
+  .status-panel {
+    padding: 22px;
+  }
+
+  .sample-grid,
+  .analysis-grid,
+  .param-grid,
+  .compare-box,
+  .signal-grid,
+  .selected-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-stage img,
+  .image-frame img {
+    height: 300px;
+    min-height: 300px;
+    max-height: 300px;
+  }
+
+  .action-row {
+    flex-direction: column;
+  }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">AF</div>
+      <div class="brand-copy">
+        <strong>AgentFace Demo</strong>
+        <span>Curated Interactive Showcase</span>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="mode-pill">Demo Only</div>
+  </header>
+
+  <section class="hero panel">
+    <div>
+      <p class="eyebrow">Showcase Workspace</p>
+      <h1>一个只用于演示的假交互网页。</h1>
+      <p>
+        这个页面不会调用真实模型，也不允许上传个人照片。你只能从预设样图中选择，然后体验完整的“选图、看方案、调参数、看结果”的前端交互流程。
+      </p>
+      <div class="hero-points">
+        <span>固定样图选择</span>
+        <span>无模型调用</span>
+        <span>前端预设结果</span>
+      </div>
+      <div class="hero-actions">
+        <button class="btn btn-primary" type="button" id="scrollToSamplesBtn">开始体验演示</button>
+      </div>
+    </div>
+
+    <div class="hero-rules">
+      <div class="rule-card">
+        <span class="rule-tag">规则 01</span>
+        <strong>禁上传个人照片</strong>
+        <p>演示页只允许使用官方样图，避免任何真实用户数据进入页面流程。</p>
+      </div>
+      <div class="rule-card">
+        <span class="rule-tag">规则 02</span>
+        <strong>禁模型请求</strong>
+        <p>页面中的分析、调参和结果生成都由前端内置预设驱动，不访问后端模型接口。</p>
+      </div>
+      <div class="rule-card">
+        <span class="rule-tag">规则 03</span>
+        <strong>保留工作流感</strong>
+        <p>虽然是假交互，但仍保留完整的工作台节奏，方便你录制演示或做展示。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="demo-grid" id="demoWorkspace">
+    <div class="demo-main">
+      <article class="panel card">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Step 1</p>
+            <h2>选择指定样图</h2>
+          </div>
+          <div class="rule-tag">仅限官方样图</div>
+        </div>
+        <p class="panel-note">从下面的预设样图中选择一张进入演示。这个页面没有真实上传入口，也不会读取本机照片。</p>
+
+        <div class="sample-grid" id="sampleGrid"></div>
+
+        <div class="selected-stage hidden" id="selectedStage">
+          <img id="selectedPreview" src="" alt="当前选中的演示样图">
+          <div class="selected-copy">
+            <div>
+              <p class="eyebrow">Selected Portrait</p>
+              <h3 id="selectedName">待选择</h3>
+            </div>
+            <p id="selectedSummary">选择一张样图后，这里会出现该样图对应的演示说明。</p>
+            <div class="tag-row" id="selectedTags"></div>
+            <div class="action-row">
+              <button class="btn btn-primary" type="button" id="loadPresetBtn" disabled>载入演示方案</button>
+              <button class="btn btn-secondary" type="button" id="clearSelectionBtn">清空选择</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel card hidden" id="analysisPanel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Step 2</p>
+            <h2>分析与建议</h2>
+          </div>
+          <div class="rule-tag" id="analysisStatePill">演示方案已载入</div>
+        </div>
+        <p class="panel-note">这一部分使用的是前端预设分析结果，只用于展示页面节奏，不代表真实模型推断。</p>
+
+        <div class="analysis-shell" id="analysisCard"></div>
+      </article>
+
+      <article class="panel card hidden" id="paramsPanel">
+        <div class="section-divider">
+          <div>
+            <p class="eyebrow">Step 3</p>
+            <h3>参数微调</h3>
+          </div>
+          <div class="rule-tag" id="intensityBadge">整体强度 0%</div>
+        </div>
+        <p class="panel-note">你可以像真实工作台一样滑动参数。页面会在本地模拟结果图，不触发任何后端推理。</p>
+        <div class="param-shell">
+          <div class="param-grid" id="paramGrid"></div>
+          <div class="action-row">
+            <button class="btn btn-primary" type="button" id="generateBtn">生成演示结果</button>
+            <button class="btn btn-secondary" type="button" id="resetParamsBtn">恢复预设参数</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel card hidden" id="resultPanel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Step 4</p>
+            <h2>结果输出与对比</h2>
+          </div>
+          <div class="rule-tag" id="resultModeBadge">Fake Result</div>
+        </div>
+
+        <div class="result-shell">
+          <div class="placeholder" id="resultPlaceholder">
+            <div class="result-orbit">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <h3 id="resultTitle">等待生成演示结果</h3>
+            <p id="resultText">确认样图并载入方案后，这里会显示预设的 before / after 对比。</p>
+          </div>
+
+          <div id="resultContent" class="hidden">
+            <p class="result-caption" id="resultCaption">结果由前端模拟生成，用于演示页面逻辑和视觉呈现，不代表真实模型效果。</p>
+            <div class="compare-box">
+              <div class="side">
+                <div class="frame-label">Before</div>
+                <div class="image-frame">
+                  <img id="beforePreview" src="" alt="演示原图">
+                </div>
+                <div class="side-label">指定样图</div>
+              </div>
+              <div class="side">
+                <div class="frame-label">After</div>
+                <div class="image-frame">
+                  <img id="afterPreview" src="" alt="演示结果">
+                </div>
+                <canvas id="resultCanvas" class="hidden"></canvas>
+                <div class="side-label">本地模拟结果</div>
+              </div>
+            </div>
+            <div class="action-row">
+              <button class="btn btn-secondary" type="button" id="downloadBtn">下载演示图</button>
+              <button class="btn btn-primary" type="button" id="chooseAnotherBtn">换一张样图重来</button>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <aside class="panel status-panel">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Session Status</p>
+          <h2>当前进度</h2>
+        </div>
+        <div class="rule-tag" id="statusPill">待选择</div>
+      </div>
+
+      <div class="status-copy">
+        <h3 id="statusTitle">先从指定样图里选一张进入演示。</h3>
+        <p id="statusText">这个页面不会调用模型，也不会接收个人上传图片，所有交互都在浏览器内完成。</p>
+      </div>
+
+      <div class="signal-grid">
+        <div class="signal-card">
+          <span>演示模式</span>
+          <strong>本地预设</strong>
+        </div>
+        <div class="signal-card">
+          <span>输入来源</span>
+          <strong>固定样图</strong>
+        </div>
+      </div>
+
+      <div class="step-list" id="stepList">
+        <div class="step-item is-active" data-step="select">
+          <div class="step-index">01</div>
+          <div>
+            <strong>选择样图</strong>
+            <p>从固定列表里选一张进入本次演示。</p>
+          </div>
+        </div>
+        <div class="step-item" data-step="analysis">
+          <div class="step-index">02</div>
+          <div>
+            <strong>查看方案</strong>
+            <p>加载预设分析结果与建议参数。</p>
+          </div>
+        </div>
+        <div class="step-item" data-step="adjust">
+          <div class="step-index">03</div>
+          <div>
+            <strong>手动调参</strong>
+            <p>按演示逻辑滑动参数，模拟人工修图步骤。</p>
+          </div>
+        </div>
+        <div class="step-item" data-step="result">
+          <div class="step-index">04</div>
+          <div>
+            <strong>输出对比</strong>
+            <p>浏览器本地生成一版 fake 结果作为展示。</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<script>
+const IS_FILE = window.location.protocol === "file:";
+const IS_GITHUB_PAGES = window.location.hostname.endsWith("github.io");
+const ASSET_BASE = IS_FILE || IS_GITHUB_PAGES
+  ? "./demo-samples"
+  : "/static/demo-samples";
+
+const LABELS = {
+  skin_smoothing: "磨皮",
+  whitening: "美白",
+  eye_enlargement: "大眼",
+  face_slimming: "瘦脸",
+  blush: "腮红",
+  lip_color_adjustment: "唇色调整",
+  blemish_removal: "祛痘祛斑",
+  nose_reshaping: "鼻子塑形",
+  eyebrow_adjustment: "眉毛调整"
+};
+
+const DEMO_SAMPLES = [
+  {
+    id: "portrait-01",
+    name: "自然通透样图",
+    image: `${ASSET_BASE}/portrait_01.jpg`,
+    summary: "偏自然路线，重点展示肤质整理和轻度气色提升，适合说明“保持原貌但更干净”的演示逻辑。",
+    tags: ["自然轮廓", "肤质整理", "轻度提亮"],
+    analysis: {
+      skinTone: "自然偏暖",
+      skinCondition: "轻微泛红，毛孔可见",
+      lighting: "均匀室内光",
+      direction: "保留原生轮廓，优先处理肤质细节与整体通透感",
+      features: ["轮廓自然", "五官均衡", "表情亲和"],
+      issues: ["轻微油光", "鼻翼泛红"]
+    },
+    params: {
+      skin_smoothing: 2.6,
+      whitening: 1.2,
+      eye_enlargement: 1.1,
+      face_slimming: 0.8,
+      blush: 1.4,
+      lip_color_adjustment: 1.3,
+      blemish_removal: 2.4,
+      nose_reshaping: 0.6,
+      eyebrow_adjustment: 1.0
+    }
+  },
+  {
+    id: "portrait-02",
+    name: "清爽干净样图",
+    image: `${ASSET_BASE}/portrait_02.jpg`,
+    summary: "适合展示轻妆增强的演示版本，重点是更明快的肤色和更整洁的面部状态。",
+    tags: ["轻妆修饰", "肤色均匀", "视觉提气"],
+    analysis: {
+      skinTone: "中性自然",
+      skinCondition: "肤色略不均，局部细节可优化",
+      lighting: "柔和自然光",
+      direction: "让画面更轻盈干净，但不做明显五官结构改动",
+      features: ["比例稳定", "光线柔和", "主体清晰"],
+      issues: ["局部暗沉", "细节不够明快"]
+    },
+    params: {
+      skin_smoothing: 2.2,
+      whitening: 1.6,
+      eye_enlargement: 1.4,
+      face_slimming: 1.0,
+      blush: 1.6,
+      lip_color_adjustment: 1.5,
+      blemish_removal: 2.1,
+      nose_reshaping: 0.7,
+      eyebrow_adjustment: 1.1
+    }
+  },
+  {
+    id: "portrait-03",
+    name: "暖感细修样图",
+    image: `${ASSET_BASE}/portrait_03.jpg`,
+    summary: "这一张更适合演示“暖感保留”的方案，不追求强美白，而是强化整洁度和立体感。",
+    tags: ["暖感保留", "细节柔化", "轻度立体"],
+    analysis: {
+      skinTone: "暖调健康",
+      skinCondition: "肤质基础不错，可做轻度整理",
+      lighting: "偏暖光",
+      direction: "保留暖光氛围，避免把肤色拉得过冷过白",
+      features: ["暖感氛围", "面部状态稳定", "原图质感完整"],
+      issues: ["轻微暗区", "肤质细节可再柔和"]
+    },
+    params: {
+      skin_smoothing: 2.0,
+      whitening: 0.9,
+      eye_enlargement: 1.2,
+      face_slimming: 0.9,
+      blush: 1.8,
+      lip_color_adjustment: 1.7,
+      blemish_removal: 1.9,
+      nose_reshaping: 0.8,
+      eyebrow_adjustment: 1.2
+    }
+  },
+  {
+    id: "portrait-04",
+    name: "柔和精修样图",
+    image: `${ASSET_BASE}/portrait_04.jpg`,
+    summary: "适合展示更精致一点的假交互方案：维持真实感，同时让皮肤和气色更完整统一。",
+    tags: ["精致自然", "气色统一", "轻度修容感"],
+    analysis: {
+      skinTone: "自然中性",
+      skinCondition: "局部细节略粗糙，需要轻度平衡",
+      lighting: "明亮顺光",
+      direction: "以“更完整、更稳定、更上镜”为主，而不是明显改脸",
+      features: ["主体集中", "上镜感强", "轮廓顺滑"],
+      issues: ["细节层次略杂", "气色可更集中"]
+    },
+    params: {
+      skin_smoothing: 2.8,
+      whitening: 1.3,
+      eye_enlargement: 1.3,
+      face_slimming: 1.1,
+      blush: 1.9,
+      lip_color_adjustment: 1.8,
+      blemish_removal: 2.3,
+      nose_reshaping: 0.9,
+      eyebrow_adjustment: 1.1
+    }
+  }
+];
+
+const WORKFLOW_STATES = {
+  select: {
+    pill: "待选择",
+    title: "先从指定样图里选一张进入演示。",
+    text: "这个页面不会调用模型，也不会接收个人上传图片，所有交互都在浏览器内完成。",
+    step: "select"
+  },
+  selected: {
+    pill: "已选样图",
+    title: "样图已经锁定，可以载入预设方案。",
+    text: "下一步会显示前端内置的分析摘要和建议参数，方便继续演示工作流。",
+    step: "analysis"
+  },
+  ready: {
+    pill: "方案就绪",
+    title: "预设分析和参数已经载入。",
+    text: "你现在可以像真实工作台一样拖动参数，再决定是否生成演示结果。",
+    step: "adjust"
+  },
+  generating: {
+    pill: "生成中",
+    title: "正在本地模拟结果图像。",
+    text: "这里不会调用任何模型服务，只是用浏览器本地预设逻辑生成一版演示结果。",
+    step: "result"
+  },
+  completed: {
+    pill: "已完成",
+    title: "演示结果已经生成。",
+    text: "你可以继续拖动参数刷新结果，也可以下载当前这张演示图用于展示。",
+    step: "result"
+  }
+};
+
+let currentSample = null;
+let presetParams = null;
+let currentParams = null;
+let resultReady = false;
+let currentResultUrl = "";
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+function cloneParams(params) {
+  return JSON.parse(JSON.stringify(params));
+}
+
+function esc(text = "") {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function describeSliderValue(value) {
+  if (value < 1) return "极轻";
+  if (value < 2) return "轻度";
+  if (value < 3) return "适中";
+  if (value < 4) return "明显";
+  return "强化";
+}
+
+function showNotice(message, type = "info") {
+  const node = document.createElement("div");
+  node.className = `notice ${type}`;
+  node.textContent = message;
+  document.body.appendChild(node);
+  window.setTimeout(() => node.remove(), 2600);
+}
+
+function updateStatus(stateKey) {
+  const state = WORKFLOW_STATES[stateKey];
+  if (!state) return;
+  $("#statusPill").textContent = state.pill;
+  $("#statusTitle").textContent = state.title;
+  $("#statusText").textContent = state.text;
+
+  const order = ["select", "analysis", "adjust", "result"];
+  const activeIndex = order.indexOf(state.step);
+  $$("#stepList .step-item").forEach((item, index) => {
+    item.classList.remove("is-active", "is-done");
+    if (index < activeIndex) {
+      item.classList.add("is-done");
+    } else if (index === activeIndex) {
+      item.classList.add("is-active");
+    }
+  });
+}
+
+function renderSampleGrid() {
+  $("#sampleGrid").innerHTML = DEMO_SAMPLES.map((sample) => `
+    <button class="sample-card ${currentSample && currentSample.id === sample.id ? "is-selected" : ""}" type="button" data-id="${sample.id}">
+      <img class="sample-thumb" src="${sample.image}" alt="${esc(sample.name)}">
+      <div>
+        <strong>${esc(sample.name)}</strong>
+        <p>${esc(sample.summary)}</p>
+      </div>
+      <div class="tag-row">
+        ${sample.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join("")}
+      </div>
+    </button>
+  `).join("");
+
+  $$("#sampleGrid .sample-card").forEach((button) => {
+    button.addEventListener("click", () => {
+      const sample = DEMO_SAMPLES.find((item) => item.id === button.dataset.id);
+      selectSample(sample);
+    });
+  });
+}
+
+function selectSample(sample) {
+  currentSample = sample;
+  presetParams = cloneParams(sample.params);
+  currentParams = cloneParams(sample.params);
+  resultReady = false;
+  currentResultUrl = "";
+  renderSampleGrid();
+  renderSelectedStage();
+  hideLowerSteps();
+  updateStatus("selected");
+  showNotice("样图已选中，下一步可以载入演示方案。", "success");
+}
+
+function clearSelection() {
+  currentSample = null;
+  presetParams = null;
+  currentParams = null;
+  resultReady = false;
+  currentResultUrl = "";
+  renderSampleGrid();
+  $("#selectedStage").classList.add("hidden");
+  hideLowerSteps();
+  updateStatus("select");
+}
+
+function hideLowerSteps() {
+  $("#analysisPanel").classList.add("hidden");
+  $("#paramsPanel").classList.add("hidden");
+  $("#resultPanel").classList.add("hidden");
+  $("#resultContent").classList.add("hidden");
+  $("#resultPlaceholder").classList.remove("hidden");
+  $("#resultTitle").textContent = "等待生成演示结果";
+  $("#resultText").textContent = "确认样图并载入方案后，这里会显示预设的 before / after 对比。";
+}
+
+function renderSelectedStage() {
+  if (!currentSample) {
+    $("#selectedStage").classList.add("hidden");
+    return;
+  }
+
+  $("#selectedStage").classList.remove("hidden");
+  $("#selectedPreview").src = currentSample.image;
+  $("#selectedName").textContent = currentSample.name;
+  $("#selectedSummary").textContent = currentSample.summary;
+  $("#selectedTags").innerHTML = currentSample.tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join("");
+  $("#loadPresetBtn").disabled = false;
+}
+
+function renderAnalysis() {
+  const analysis = currentSample.analysis;
+  $("#analysisCard").innerHTML = `
+    <div class="analysis-box">
+      <div class="analysis-grid">
+        <div class="analysis-tile">
+          <span>肤色</span>
+          <strong>${esc(analysis.skinTone)}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>肤况</span>
+          <strong>${esc(analysis.skinCondition)}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>光线</span>
+          <strong>${esc(analysis.lighting)}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>建议方向</span>
+          <strong>${esc(analysis.direction)}</strong>
+        </div>
+      </div>
+
+      <div class="analysis-group">
+        <span class="list-label">识别特征</span>
+        <div class="tag-row">${analysis.features.map((item) => `<span class="tag">${esc(item)}</span>`).join("")}</div>
+      </div>
+
+      <div class="analysis-group">
+        <span class="list-label">需要关注</span>
+        <div class="tag-row">${analysis.issues.map((item) => `<span class="tag tag-warn">${esc(item)}</span>`).join("")}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderParamGrid() {
+  $("#paramGrid").innerHTML = Object.entries(LABELS).map(([key, label]) => {
+    const value = Number(currentParams[key] ?? 0);
+    return `
+      <div class="param-item">
+        <div class="param-head">
+          <label>${esc(label)}</label>
+          <span class="param-level">${describeSliderValue(value)}</span>
+        </div>
+        <div class="range-row">
+          <input type="range" min="0" max="5" step="0.1" value="${value}" data-key="${key}" style="--pct:${(value / 5) * 100}%">
+          <span class="val">${value.toFixed(1)}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+
+  $$("#paramGrid input[type='range']").forEach((slider) => {
+    slider.addEventListener("input", () => {
+      const key = slider.dataset.key;
+      const value = slider.valueAsNumber;
+      currentParams[key] = value;
+      slider.style.setProperty("--pct", `${(value / 5) * 100}%`);
+      const parent = slider.closest(".param-item");
+      parent.querySelector(".val").textContent = value.toFixed(1);
+      parent.querySelector(".param-level").textContent = describeSliderValue(value);
+      updateIntensityBadge();
+      if (resultReady) {
+        renderResultImage();
+      }
+    });
+  });
+}
+
+function updateIntensityBadge() {
+  const values = Object.values(currentParams || {});
+  const sum = values.reduce((acc, value) => acc + Number(value || 0), 0);
+  const pct = values.length ? Math.round((sum / (values.length * 5)) * 100) : 0;
+  $("#intensityBadge").textContent = `整体强度 ${pct}%`;
+}
+
+function loadPreset() {
+  if (!currentSample) return;
+  $("#loadPresetBtn").disabled = true;
+  updateStatus("selected");
+  showNotice("正在载入预设方案…", "info");
+
+  window.setTimeout(() => {
+    $("#analysisPanel").classList.remove("hidden");
+    $("#paramsPanel").classList.remove("hidden");
+    $("#resultPanel").classList.remove("hidden");
+    renderAnalysis();
+    renderParamGrid();
+    updateIntensityBadge();
+    $("#analysisPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+    updateStatus("ready");
+    $("#loadPresetBtn").disabled = false;
+  }, 760);
+}
+
+function buildFilterFromParams() {
+  const p = currentParams;
+  const brightness = 100 + p.whitening * 4 + p.skin_smoothing * 1.4;
+  const contrast = 100 + p.blemish_removal * 3 + p.eye_enlargement * 1.4;
+  const saturate = 100 + p.blush * 6 + p.lip_color_adjustment * 5;
+  const sepia = Math.min(18, p.blush * 2 + p.lip_color_adjustment * 1.8);
+  return `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%) sepia(${sepia}%)`;
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+async function renderResultImage() {
+  const image = await loadImage(currentSample.image);
+  const maxWidth = 1200;
+  const ratio = Math.min(1, maxWidth / image.naturalWidth);
+  const width = Math.round(image.naturalWidth * ratio);
+  const height = Math.round(image.naturalHeight * ratio);
+  const canvas = $("#resultCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = width;
+  canvas.height = height;
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.filter = buildFilterFromParams();
+  ctx.drawImage(image, 0, 0, width, height);
+  ctx.filter = "none";
+
+  ctx.globalCompositeOperation = "screen";
+  ctx.fillStyle = `rgba(255, 238, 228, ${0.05 + currentParams.whitening * 0.012})`;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.fillStyle = `rgba(241, 129, 113, ${0.02 + currentParams.blush * 0.01})`;
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.globalCompositeOperation = "source-over";
+  currentResultUrl = canvas.toDataURL("image/jpeg", 0.92);
+  $("#afterPreview").src = currentResultUrl;
+}
+
+function getResultSummary() {
+  const p = currentParams;
+  if (p.skin_smoothing >= 2.7 && p.blemish_removal >= 2.2) {
+    return "这版演示结果更强调肤质整理和整洁度，适合展示“自然但更上镜”的效果。";
+  }
+  if (p.whitening >= 1.5 || p.blush >= 1.8) {
+    return "这版演示结果更偏提气和轻妆感，适合展示“更明快、更有气色”的效果。";
+  }
+  return "这版演示结果更强调保留原图状态，只做轻量优化和基础整理。";
+}
+
+function generateResult() {
+  if (!currentSample || !currentParams) return;
+
+  updateStatus("generating");
+  $("#resultPlaceholder").classList.remove("hidden");
+  $("#resultContent").classList.add("hidden");
+  $("#resultTitle").textContent = "正在生成演示结果";
+  $("#resultText").textContent = "浏览器正在根据预设参数本地合成一张 fake 效果图，请稍候。";
+  $("#resultPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  window.setTimeout(async () => {
+    await renderResultImage();
+    $("#beforePreview").src = currentSample.image;
+    $("#resultCaption").textContent = getResultSummary();
+    $("#resultPlaceholder").classList.add("hidden");
+    $("#resultContent").classList.remove("hidden");
+    resultReady = true;
+    updateStatus("completed");
+    showNotice("演示结果已生成。", "success");
+  }, 980);
+}
+
+function resetParams() {
+  if (!presetParams) return;
+  currentParams = cloneParams(presetParams);
+  renderParamGrid();
+  updateIntensityBadge();
+  if (resultReady) {
+    renderResultImage();
+  }
+}
+
+function downloadResult() {
+  if (!currentResultUrl) {
+    showNotice("请先生成演示结果。", "error");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = currentResultUrl;
+  link.download = `${currentSample.id}-demo-result.jpg`;
+  link.click();
+}
+
+function chooseAnother() {
+  clearSelection();
+  $("#demoWorkspace").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+$("#scrollToSamplesBtn").addEventListener("click", () => {
+  $("#demoWorkspace").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$("#loadPresetBtn").addEventListener("click", loadPreset);
+$("#clearSelectionBtn").addEventListener("click", clearSelection);
+$("#generateBtn").addEventListener("click", generateResult);
+$("#resetParamsBtn").addEventListener("click", resetParams);
+$("#downloadBtn").addEventListener("click", downloadResult);
+$("#chooseAnotherBtn").addEventListener("click", chooseAnother);
+
+renderSampleGrid();
+updateStatus("select");
+</script>
+</body>
+</html>

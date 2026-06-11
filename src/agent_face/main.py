@@ -102,6 +102,14 @@ async def web_ui():
     return FileResponse(static_dir / "index.html")
 
 
+@app.get("/demo")
+@app.get("/demo/")
+async def demo_ui():
+    """Serve the curated fake demo UI."""
+    from fastapi.responses import FileResponse
+    return FileResponse(static_dir / "demo.html")
+
+
 @app.get("/")
 async def root():
     """Root endpoint — redirects to API docs."""

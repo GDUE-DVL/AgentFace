@@ -3,681 +3,2994 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgentFace · 智能美颜助手</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light">
+<title>AgentFace · Portrait Beauty Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f5f5f7;
-  --card: #fff;
-  --text: #1d1d1f;
-  --dim: #86868b;
-  --blue: #0071e3;
-  --blue-light: #e8f2fd;
-  --green: #34c759;
-  --green-light: #e8f8ed;
-  --red: #ff3b30;
-  --orange: #ff9500;
-  --yellow: #ffcc00;
-  --purple: #af52de;
-  --radius: 16px;
-  --radius-sm: 10px;
-  --shadow: 0 2px 12px rgba(0,0,0,.06);
+  --bg: #f4efe8;
+  --bg-deep: #efe4d4;
+  --panel: rgba(255, 250, 245, 0.82);
+  --panel-strong: #fffaf5;
+  --line: rgba(31, 39, 54, 0.09);
+  --line-strong: rgba(31, 39, 54, 0.16);
+  --text: #162033;
+  --text-soft: #66707d;
+  --accent: #ef7b5b;
+  --accent-deep: #d96047;
+  --accent-soft: rgba(239, 123, 91, 0.15);
+  --teal: #179087;
+  --teal-soft: rgba(23, 144, 135, 0.14);
+  --gold: #dbb15e;
+  --gold-soft: rgba(219, 177, 94, 0.18);
+  --danger: #cb4f4f;
+  --danger-soft: rgba(203, 79, 79, 0.14);
+  --shadow-xl: 0 28px 80px rgba(58, 38, 22, 0.12);
+  --shadow-lg: 0 18px 50px rgba(58, 38, 22, 0.1);
+  --shadow-sm: 0 10px 24px rgba(58, 38, 22, 0.06);
+  --radius-xl: 30px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
-  font-family: "Inter", "Noto Sans SC", -apple-system, sans-serif;
-  background: var(--bg); color: var(--text);
-  min-height: 100vh; -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(255, 219, 177, 0.6), transparent 26%),
+    radial-gradient(circle at top right, rgba(97, 182, 173, 0.24), transparent 24%),
+    linear-gradient(180deg, #f9f5ef 0%, #f3ede5 52%, #efe7dc 100%);
+  color: var(--text);
+  font-family: "Manrope", "Noto Sans SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ── Nav ── */
-nav {
-  background: rgba(255,255,255,.8); backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(0,0,0,.08);
-  padding: 0 32px; height: 52px;
-  display: flex; align-items: center; gap: 16px;
-  position: sticky; top: 0; z-index: 100;
-}
-nav .logo { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-nav .logo span { color: var(--blue); }
-nav .sep { width: 1px; height: 20px; background: #ddd; }
-nav .tab {
-  font-size: 13px; font-weight: 500; color: var(--dim); cursor: pointer;
-  padding: 6px 12px; border-radius: 6px; transition: all .15s; border: none; background: none;
-}
-nav .tab:hover, nav .tab.on { color: var(--text); background: #f0f0f0; }
-nav .spacer { flex:1; }
-nav .user-chip {
-  display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px;
-  border-radius: 24px; background: #f0f0f0; cursor: pointer; font-size: 13px; font-weight: 500;
-}
-nav .user-chip .av {
-  width: 28px; height: 28px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--blue), var(--purple));
-  display: flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 600;
-}
-nav .user-chip .live { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
-
-/* ── Layout ── */
-.page { display: none; }
-.page.on { display: block; }
-
-.container {
-  max-width: 1100px; margin: 0 auto; padding: 32px 24px;
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: auto;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(18px);
 }
 
-/* ── Workflow Page ── */
-.workflow-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 20px; align-items: start;
+body::before {
+  width: 420px;
+  height: 420px;
+  top: -120px;
+  right: -90px;
+  background: rgba(238, 123, 91, 0.12);
+  animation: drift 14s ease-in-out infinite alternate;
 }
-.card {
-  background: var(--card); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 28px;
-}
-.card h3 { font-size: 15px; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-/* Upload */
+body::after {
+  width: 360px;
+  height: 360px;
+  bottom: 10%;
+  left: -90px;
+  background: rgba(23, 144, 135, 0.1);
+  animation: drift 16s ease-in-out infinite alternate-reverse;
+}
+
+.shell {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 18px 22px 40px;
+}
+
+.topbar {
+  position: relative;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  background: rgba(255, 249, 243, 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-sm);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.brand-mark {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.18)),
+    linear-gradient(135deg, var(--accent), #f2b36a);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+  color: #fff7f2;
+  font: 700 15px/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.brand-copy {
+  min-width: 0;
+}
+
+.brand-copy strong {
+  display: block;
+  font: 700 1.05rem/1.1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.brand-copy span {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(22, 32, 51, 0.05);
+}
+
+.tab {
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  font: 700 0.87rem/1 "Manrope", "Noto Sans SC", sans-serif;
+  padding: 11px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: 0.24s ease;
+}
+
+.tab:hover,
+.tab.on {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 18px rgba(62, 39, 18, 0.08);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  border: none;
+  cursor: pointer;
+  padding: 8px 10px 8px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 243, 232, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.56);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.user-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  color: #fff;
+  font: 700 0.86rem/1 "Space Grotesk", sans-serif;
+}
+
+.user-meta {
+  min-width: 0;
+  text-align: left;
+}
+
+.user-meta span {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+}
+
+.user-meta strong {
+  display: block;
+  margin-top: 2px;
+  max-width: 168px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.88rem;
+}
+
+.user-live {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 6px rgba(23, 144, 135, 0.12);
+}
+
+.page {
+  display: none;
+  margin-top: 26px;
+}
+
+.page.on {
+  display: block;
+  animation: fadePage 0.45s ease;
+}
+
+.panel {
+  position: relative;
+  overflow: hidden;
+  scroll-margin-top: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 249, 244, 0.82)),
+    var(--panel);
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-lg);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.28), transparent 45%);
+}
+
+.hero,
+.dashboard-hero {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 360px);
+  padding: 34px;
+}
+
+.eyebrow {
+  font: 700 0.72rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero h1,
+.dashboard-hero h1 {
+  margin-top: 14px;
+  max-width: 12ch;
+  font: 800 clamp(2.3rem, 5vw, 4.2rem)/0.98 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.06em;
+}
+
+.hero-text,
+.dashboard-copy p:last-child {
+  margin-top: 16px;
+  max-width: 62ch;
+  color: var(--text-soft);
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.hero-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.hero-points span {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+  color: var(--text-soft);
+  font-size: 0.86rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.hero-actions .btn {
+  min-width: 160px;
+}
+
+.hero-metrics {
+  display: grid;
+  gap: 12px;
+}
+
+.metric-card,
+.dashboard-highlight {
+  padding: 20px 20px 18px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 246, 237, 0.9));
+  border: 1px solid rgba(22, 32, 51, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.metric-card span,
+.dashboard-highlight span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.metric-card strong,
+.dashboard-highlight strong {
+  display: block;
+  margin-top: 8px;
+  font: 800 1.54rem/1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.metric-card.accent {
+  background:
+    radial-gradient(circle at top right, rgba(255, 199, 141, 0.5), transparent 44%),
+    linear-gradient(180deg, rgba(255, 244, 233, 0.95), rgba(255, 251, 248, 0.88));
+}
+
+.metric-card p,
+.dashboard-highlight p {
+  margin-top: 10px;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.studio-view {
+  display: grid;
+  gap: 24px;
+  margin-top: 6px;
+}
+
+.studio-view.is-active .reveal,
+.studio-view.is-active .delay-1,
+.studio-view.is-active .delay-2,
+.studio-view.is-active .delay-3 {
+  animation: none;
+}
+
+.studio-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 26px;
+}
+
+.studio-head h2 {
+  margin-top: 8px;
+  font: 800 1.56rem/1.06 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.studio-head p {
+  margin-top: 10px;
+  max-width: 58ch;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.studio-head-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.studio-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 24px;
+  margin-top: 4px;
+  align-items: start;
+}
+
+.studio-main {
+  display: grid;
+  gap: 24px;
+  align-content: start;
+  min-width: 0;
+}
+
+.upload-panel,
+.result-panel,
+.status-panel,
+.pref-card,
+.history-panel {
+  padding: 30px;
+}
+
+.upload-panel,
+.result-panel,
+.status-panel {
+  min-width: 0;
+}
+
+.result-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-panel {
+  position: sticky;
+  top: 24px;
+  height: fit-content;
+}
+
+.status-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+.status-summary {
+  display: grid;
+  gap: 16px;
+}
+
+.panel-heading,
+.section-divider {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.panel-heading h2,
+.section-divider h3 {
+  margin-top: 8px;
+  font: 800 1.42rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.section-divider.tight {
+  margin-top: 24px;
+}
+
+.ghost-btn {
+  border: 1px solid rgba(22, 32, 51, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font: 700 0.84rem/1 "Manrope", "Noto Sans SC", sans-serif;
+  cursor: pointer;
+  transition: 0.22s ease;
+}
+
+.ghost-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.dropzone-shell {
+  margin-top: 22px;
+}
+
 .dropzone {
-  border: 2px dashed #d2d2d7; border-radius: var(--radius);
-  padding: 56px 24px; text-align: center; cursor: pointer;
-  transition: all .2s; background: #fafafa;
+  position: relative;
+  min-height: 380px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 26px;
+  border: 1.5px dashed rgba(22, 32, 51, 0.16);
+  background:
+    radial-gradient(circle at top, rgba(255, 205, 169, 0.28), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(246, 238, 229, 0.92));
+  cursor: pointer;
+  transition: 0.24s ease;
 }
-.dropzone:hover, .dropzone.drag { border-color: var(--blue); background: var(--blue-light); }
-.dropzone .dz-icon { font-size: 52px; margin-bottom: 12px; }
-.dropzone .dz-title { font-size: 15px; font-weight: 600; color: var(--text); }
-.dropzone .dz-sub { font-size: 12px; color: var(--dim); margin-top: 4px; }
-.dropzone input { display: none; }
+
+.dropzone:hover,
+.dropzone.drag {
+  transform: translateY(-2px);
+  border-color: rgba(239, 123, 91, 0.42);
+  box-shadow: inset 0 0 0 1px rgba(239, 123, 91, 0.16), var(--shadow-sm);
+}
+
+.dropzone input {
+  display: none;
+}
+
+.dz-art {
+  width: 108px;
+  height: 108px;
+  margin: 0 auto 20px;
+  border-radius: 30px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.72), transparent 34%),
+    linear-gradient(145deg, rgba(255, 202, 154, 0.86), rgba(23, 144, 135, 0.76));
+  color: #fffefb;
+  font: 700 1.8rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.08em;
+  box-shadow: 0 18px 45px rgba(63, 38, 18, 0.14);
+}
+
+.dropzone h3 {
+  font-size: 1.18rem;
+  letter-spacing: -0.02em;
+}
+
+.dropzone p {
+  margin-top: 8px;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.dropzone small {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+}
+
+.preview-stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 26px;
+  overflow: hidden;
+  border: 1px solid rgba(22, 32, 51, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.62), rgba(248, 240, 232, 0.9));
+}
+
+.preview-stage::after {
+  content: "";
+  position: absolute;
+  inset: auto -18px -18px auto;
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.24);
+  filter: blur(10px);
+  z-index: 0;
+}
 
 .preview-img {
-  width: 100%; max-height: 320px; object-fit: contain;
-  border-radius: var(--radius-sm);
+  display: block;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: clamp(360px, 42vw, 620px);
+  min-height: 360px;
+  max-height: 620px;
+  object-fit: contain;
+  border-radius: 22px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.52);
 }
 
-/* Inputs & Buttons */
-.inp {
-  width: 100%; padding: 12px 16px; border: 1px solid #d2d2d7; border-radius: 12px;
-  font-size: 14px; font-family: inherit; outline: none; transition: all .2s;
+.preview-meta {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 250, 244, 0.86);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.56);
 }
-.inp:focus { border-color: var(--blue); box-shadow: 0 0 0 4px rgba(0,113,227,.1); }
+
+.preview-meta span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.preview-meta strong {
+  display: block;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1rem;
+}
+
+.field-block {
+  margin-top: 22px;
+}
+
+.field-label {
+  display: block;
+  font: 700 0.83rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-soft);
+}
+
+.field-note,
+.micro-copy,
+.panel-note {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.inp {
+  width: 100%;
+  margin-top: 12px;
+  border: 1px solid rgba(22, 32, 51, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--text);
+  font: 600 0.95rem/1.5 "Manrope", "Noto Sans SC", sans-serif;
+  padding: 16px 18px;
+  outline: none;
+  transition: 0.22s ease;
+}
+
+.inp::placeholder {
+  color: rgba(102, 112, 125, 0.72);
+}
+
+.inp:focus {
+  border-color: rgba(239, 123, 91, 0.34);
+  box-shadow: 0 0 0 6px rgba(239, 123, 91, 0.09);
+}
+
+.action-cluster {
+  margin-top: 20px;
+}
 
 .btn {
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 12px 24px; border: none; border-radius: 12px;
-  font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; transition: all .2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 22px;
+  cursor: pointer;
+  font: 800 0.94rem/1 "Manrope", "Noto Sans SC", sans-serif;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
-.btn:disabled { opacity: .45; pointer-events: none; }
-.btn-primary { background: var(--blue); color: #fff; }
-.btn-primary:hover { background: #0062cc; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,113,227,.3); }
-.btn-outline { background: none; color: var(--blue); border: 1px solid #d2d2d7; }
-.btn-outline:hover { background: var(--blue-light); border-color: var(--blue); }
-.btn-full { width: 100%; }
-.btn-sm { padding: 8px 16px; font-size: 13px; }
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.flex { display: flex; } .gap-8 { gap: 8px; }
 
-/* Spinner */
-.loading-box { text-align: center; padding: 48px 20px; }
-.spinner {
-  width: 44px; height: 44px; margin: 0 auto 20px;
-  border: 3px solid #e8eaed; border-top-color: var(--blue);
-  border-radius: 50%; animation: spin .7s linear infinite;
+.btn:hover {
+  transform: translateY(-1px);
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading-box .dots::after {
-  content: ''; animation: dots 1.5s steps(4,end) infinite;
-}
-@keyframes dots { 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
 
-/* Analysis */
+.btn:disabled {
+  opacity: 0.56;
+  pointer-events: none;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+.btn-primary {
+  color: #fff9f5;
+  background: linear-gradient(135deg, var(--accent), #f2a15d);
+  box-shadow: 0 18px 34px rgba(239, 123, 91, 0.26);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 22px 40px rgba(239, 123, 91, 0.32);
+}
+
+.btn-secondary {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(22, 32, 51, 0.08);
+}
+
+.btn-secondary:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.analysis-section {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(22, 32, 51, 0.08);
+}
+
+.confidence-pill,
+.intensity-pill,
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(22, 32, 51, 0.08);
+  color: var(--text);
+  font: 800 0.79rem/1 "Manrope", "Noto Sans SC", sans-serif;
+}
+
+.status-pill {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(255, 243, 232, 0.86));
+}
+
 .analysis-box {
-  background: #f8f9fa; border-radius: var(--radius-sm); padding: 18px;
-  font-size: 14px; line-height: 2;
-}
-.analysis-box .kv { display: flex; }
-.analysis-box .k { color: var(--dim); min-width: 52px; }
-.analysis-box .v { font-weight: 500; }
-.analysis-box .reasoning {
-  margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e5ea;
-  color: var(--dim); font-size: 13px; line-height: 1.6;
+  margin-top: 16px;
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(22, 32, 51, 0.06);
 }
 
-.conf-bar {
-  display: inline-block; height: 5px; border-radius: 3px; vertical-align: middle; margin-left: 6px;
+.analysis-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
-.tag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 1px; }
-.tag-ok { background: var(--green-light); color: var(--green); }
-.tag-warn { background: #fff3e0; color: var(--orange); }
 
-/* Params */
-.param-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.analysis-tile {
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(252, 246, 240, 0.88));
+  border: 1px solid rgba(22, 32, 51, 0.05);
+}
+
+.analysis-tile span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.analysis-tile strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.04rem;
+  line-height: 1.45;
+}
+
+.confidence-track {
+  margin-top: 18px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(22, 32, 51, 0.08);
+}
+
+.confidence-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+}
+
+.analysis-group {
+  margin-top: 18px;
+}
+
+.analysis-group + .analysis-group {
+  margin-top: 14px;
+}
+
+.list-label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--text-soft);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.tag-warn {
+  background: rgba(239, 123, 91, 0.12);
+  color: var(--accent-deep);
+  border-color: rgba(239, 123, 91, 0.12);
+}
+
+.tag-ok {
+  background: rgba(23, 144, 135, 0.12);
+  color: var(--teal);
+  border-color: rgba(23, 144, 135, 0.12);
+}
+
+.reasoning-card {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(255, 218, 180, 0.34), transparent 44%),
+    rgba(255, 251, 247, 0.9);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.reasoning-card span {
+  display: block;
+  color: var(--accent);
+  font: 700 0.78rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.reasoning-card p {
+  margin-top: 10px;
+  color: var(--text-soft);
+  font-size: 0.94rem;
+  line-height: 1.8;
+}
+
+.param-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .param-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-radius: var(--radius-sm);
-  background: #f8f9fa; font-size: 13px;
-}
-.param-item label { width: 48px; flex-shrink: 0; font-weight: 500; }
-.param-item input[type=range] {
-  flex:1; height: 4px; -webkit-appearance: none; appearance: none;
-  background: linear-gradient(to right, var(--blue) var(--pct), #e0e0e0 var(--pct));
-  border-radius: 2px; outline: none;
-}
-.param-item input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none; width: 20px; height: 20px;
-  border-radius: 50%; background: #fff; border: 2px solid var(--blue);
-  cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,.12);
-}
-.param-item .val { width: 32px; text-align: right; font-weight: 700; font-size: 13px; color: var(--blue); }
-
-/* Result */
-.compare-box {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-.compare-box img {
-  width: 100%; border-radius: var(--radius-sm);
-  max-height: 300px; object-fit: contain;
-}
-.compare-box .side { text-align: center; }
-.compare-box .side .label {
-  font-size: 12px; font-weight: 600; color: var(--dim);
-  margin-top: 8px; text-transform: uppercase; letter-spacing: .5px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid rgba(22, 32, 51, 0.06);
 }
 
-/* Stars */
-.stars-row { display: flex; gap: 4px; justify-content: center; }
-.stars-row button {
-  font-size: 40px; padding: 4px 10px; background: none; border: none;
-  cursor: pointer; transition: all .12s; color: #d2d2d7; line-height: 1;
+.param-head,
+.range-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.stars-row button:hover { color: var(--yellow); transform: scale(1.18); }
-.stars-row button.on { color: var(--yellow); }
 
-/* Done */
+.param-head label {
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
+.param-level {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.range-row {
+  margin-top: 14px;
+}
+
+.param-item input[type="range"] {
+  --pct: 40%;
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--teal) var(--pct), rgba(22, 32, 51, 0.08) var(--pct), rgba(22, 32, 51, 0.08) 100%);
+}
+
+.param-item input[type="range"]::-webkit-slider-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid #fff8f3;
+  background: var(--text);
+  box-shadow: 0 8px 18px rgba(22, 32, 51, 0.18);
+  cursor: pointer;
+  -webkit-appearance: none;
+}
+
+.param-item input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #fff8f3;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 8px 18px rgba(22, 32, 51, 0.18);
+  cursor: pointer;
+}
+
+.val {
+  min-width: 38px;
+  text-align: right;
+  color: var(--accent-deep);
+  font: 800 1rem/1 "Space Grotesk", sans-serif;
+}
+
+.action-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.action-row .btn {
+  flex: 1;
+}
+
+.status-copy {
+  margin-top: 0;
+}
+
+.status-copy h3 {
+  max-width: none;
+  font: 800 1.46rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.status-copy p {
+  margin-top: 12px;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.step-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 0;
+}
+
+.step-item {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+  transition: 0.22s ease;
+}
+
+.step-index {
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: rgba(22, 32, 51, 0.06);
+  color: var(--text-soft);
+  font: 700 0.82rem/1 "Space Grotesk", sans-serif;
+}
+
+.step-item strong {
+  display: block;
+  font-size: 0.96rem;
+}
+
+.step-item p {
+  margin-top: 6px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+.step-item.is-active {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(255, 250, 245, 0.96), rgba(255, 242, 231, 0.88));
+  box-shadow: var(--shadow-sm);
+}
+
+.step-item.is-active .step-index {
+  background: linear-gradient(135deg, var(--accent), #f2b36a);
+  color: #fff9f3;
+}
+
+.step-item.is-done .step-index {
+  background: linear-gradient(135deg, var(--teal), #58b3ab);
+  color: #fff;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 0;
+}
+
+.signal-card {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(22, 32, 51, 0.05);
+}
+
+.signal-card span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.signal-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.result-empty,
 .done-card {
-  background: var(--green-light); border-radius: var(--radius-sm);
-  padding: 24px; text-align: center;
+  position: relative;
+  display: grid;
+  align-content: center;
+  padding: 30px 26px;
+  min-height: 360px;
+  border-radius: 26px;
+  text-align: center;
+  background:
+    radial-gradient(circle at top, rgba(255, 214, 175, 0.32), transparent 46%),
+    rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(22, 32, 51, 0.06);
 }
-.done-card .icon { font-size: 44px; }
-.done-card h4 { font-size: 16px; font-weight: 600; color: var(--green); margin: 8px 0; }
-.done-card p { font-size: 13px; color: var(--dim); }
 
-/* ── Dashboard Page ── */
-.stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 20px; }
+.result-empty h3,
+.done-card h3 {
+  font: 800 1.34rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.04em;
+}
+
+.result-empty p,
+.done-card p,
+.feedback-copy,
+.result-caption {
+  margin-top: 12px;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.result-orbit {
+  position: relative;
+  width: 118px;
+  height: 118px;
+  margin: 0 auto 18px;
+}
+
+.result-orbit span {
+  position: absolute;
+  border-radius: 50%;
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.result-orbit span:nth-child(1) {
+  inset: 0;
+  border: 1px solid rgba(239, 123, 91, 0.24);
+}
+
+.result-orbit span:nth-child(2) {
+  inset: 18px;
+  border: 1px solid rgba(23, 144, 135, 0.24);
+  animation-delay: 0.3s;
+}
+
+.result-orbit span:nth-child(3) {
+  inset: 38px;
+  background: linear-gradient(135deg, var(--accent), var(--teal));
+  box-shadow: 0 16px 36px rgba(239, 123, 91, 0.24);
+  animation-delay: 0.6s;
+}
+
+.compare-box {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.frame-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-soft);
+  font: 700 0.72rem/1 "Space Grotesk", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.image-frame {
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(22, 32, 51, 0.07);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(247, 239, 231, 0.92));
+}
+
+.image-frame img {
+  display: block;
+  width: 100%;
+  height: 320px;
+  object-fit: contain;
+}
+
+.side-label {
+  margin-top: 10px;
+  color: var(--text-soft);
+  font-size: 0.86rem;
+}
+
+.result-toolbar,
+.feedback-card {
+  margin-top: 18px;
+}
+
+.feedback-card {
+  padding: 22px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(22, 32, 51, 0.06);
+}
+
+.stars-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.stars-row button {
+  border: none;
+  background: transparent;
+  color: rgba(219, 177, 94, 0.34);
+  font-size: 2.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.stars-row button:hover {
+  transform: translateY(-2px) scale(1.04);
+}
+
+.stars-row button.on {
+  color: var(--gold);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 22px;
+}
+
 .stat-card {
-  background: var(--card); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 20px; text-align: center;
+  padding: 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 249, 244, 0.82)),
+    var(--panel);
+  box-shadow: var(--shadow-lg);
 }
-.stat-card .num { font-size: 36px; font-weight: 700; color: var(--blue); }
-.stat-card .label { font-size: 12px; color: var(--dim); margin-top: 4px; }
 
-.pref-card {
-  background: var(--card); border-radius: var(--radius);
-  box-shadow: var(--shadow); padding: 24px;
+.stat-card span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
+
+.stat-card strong {
+  display: block;
+  margin-top: 12px;
+  font: 800 clamp(1.8rem, 5vw, 3rem)/1 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.06em;
+}
+
+.stat-card p {
+  margin-top: 10px;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 22px;
+  margin-top: 22px;
+  align-items: start;
+}
+
+.pref-card .panel-heading,
+.history-panel .panel-heading {
+  align-items: center;
+}
+
+.pref-bars {
+  margin-top: 18px;
+}
+
 .pref-bar-row {
-  display: flex; align-items: center; gap: 12px; padding: 10px 0;
-  border-bottom: 1px solid #f0f0f0;
+  display: grid;
+  grid-template-columns: minmax(72px, 110px) 1fr 48px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(22, 32, 51, 0.06);
 }
-.pref-bar-row:last-child { border-bottom: none; }
-.pref-bar-row .name { width: 56px; font-size: 13px; font-weight: 500; flex-shrink: 0; }
-.pref-bar-row .track {
-  flex: 1; height: 8px; border-radius: 4px; background: #f0f0f0; position: relative; overflow: hidden;
-}
-.pref-bar-row .track .fill {
-  height: 100%; border-radius: 4px;
-  background: linear-gradient(90deg, var(--blue), var(--purple));
-  transition: width .6s cubic-bezier(.4,0,.2,1);
-}
-.pref-bar-row .num { width: 36px; text-align: right; font-size: 13px; font-weight: 600; color: var(--blue); }
 
-.history-list { max-height: 400px; overflow-y: auto; }
+.pref-bar-row:last-child {
+  border-bottom: none;
+}
+
+.pref-name {
+  font-weight: 700;
+  font-size: 0.93rem;
+}
+
+.pref-track {
+  position: relative;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(22, 32, 51, 0.08);
+}
+
+.pref-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--teal));
+}
+
+.pref-value {
+  text-align: right;
+  color: var(--accent-deep);
+  font: 800 0.98rem/1 "Space Grotesk", sans-serif;
+}
+
+.history-list {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+  max-height: 680px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
 .history-item {
-  padding: 14px; border-radius: var(--radius-sm);
-  border: 1px solid #f0f0f0; margin-bottom: 8px; font-size: 13px;
-  transition: all .15s; cursor: default;
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.64);
+  border: 1px solid rgba(22, 32, 51, 0.06);
 }
-.history-item:hover { background: #fafafa; }
-.history-item .top { display: flex; justify-content: space-between; align-items: center; }
-.history-item .date { color: var(--dim); font-size: 12px; }
-.history-item .score { font-weight: 600; }
-.history-item .params { color: var(--dim); font-size: 12px; margin-top: 4px; }
 
-/* User modal */
+.history-top,
+.history-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.history-top strong {
+  font-size: 0.98rem;
+}
+
+.history-meta {
+  margin-top: 12px;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+}
+
+.history-stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.history-stars span {
+  color: rgba(219, 177, 94, 0.28);
+}
+
+.history-stars span.on {
+  color: var(--gold);
+}
+
+.history-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.history-empty,
+.pref-empty {
+  padding: 24px 0;
+  color: var(--text-soft);
+  text-align: center;
+  line-height: 1.8;
+}
+
+.mt-16 {
+  margin-top: 16px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.loading-box {
+  padding: 42px 18px;
+  text-align: center;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  border: 3px solid rgba(22, 32, 51, 0.12);
+  border-top-color: var(--accent);
+  animation: spin 0.85s linear infinite;
+}
+
+.spinner-inline {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-width: 2px;
+}
+
+.loading-box p {
+  color: var(--text-soft);
+  line-height: 1.7;
+}
+
 .modal-mask {
-  position: fixed; inset: 0; background: rgba(0,0,0,.3);
-  display: flex; align-items: center; justify-content: center; z-index: 200;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(16, 20, 28, 0.24);
+  backdrop-filter: blur(10px);
 }
-.modal-box {
-  background: var(--card); border-radius: var(--radius); padding: 28px;
-  width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.15);
-}
-.modal-box h3 { font-size: 16px; margin-bottom: 16px; }
-.hidden { display: none !important; }
 
-@media(max-width:768px) {
-  .workflow-grid, .stats-grid { grid-template-columns: 1fr; }
-  .param-grid { grid-template-columns: 1fr; }
+.modal-box {
+  width: min(420px, 100%);
+  padding: 28px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 247, 239, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  box-shadow: var(--shadow-xl);
+}
+
+.modal-box h3 {
+  margin-top: 12px;
+  font: 800 1.5rem/1.08 "Space Grotesk", "Noto Sans SC", sans-serif;
+  letter-spacing: -0.05em;
+}
+
+.modal-box p {
+  margin-top: 12px;
+  color: var(--text-soft);
+  line-height: 1.75;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+.notice {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  min-width: 260px;
+  max-width: min(420px, calc(100vw - 40px));
+  padding: 14px 16px;
+  border-radius: 18px;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  line-height: 1.6;
+  animation: toastIn 0.22s ease;
+}
+
+.notice.info {
+  background: linear-gradient(135deg, #1b8d84, #3cb4a9);
+}
+
+.notice.success {
+  background: linear-gradient(135deg, #147a72, #2f9e86);
+}
+
+.notice.error {
+  background: linear-gradient(135deg, #c05151, #db7460);
+}
+
+.reveal {
+  animation: revealUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.delay-1 {
+  animation-delay: 0.06s;
+}
+
+.delay-2 {
+  animation-delay: 0.12s;
+}
+
+.delay-3 {
+  animation-delay: 0.18s;
+}
+
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadePage {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(0.98);
+    opacity: 0.84;
+  }
+  50% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(16px, 20px, 0);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 1120px) {
+  .hero,
+  .dashboard-hero,
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .studio-main {
+    grid-template-columns: 1fr;
+  }
+
+  .status-panel {
+    position: static;
+  }
+
+  .hero h1,
+  .dashboard-hero h1,
+  .status-copy h3 {
+    max-width: none;
+  }
+
+  .studio-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 820px) {
+  .shell {
+    padding: 14px 14px 28px;
+  }
+
+  .topbar {
+    flex-wrap: wrap;
+    border-radius: 28px;
+  }
+
+  .tabs {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .spacer {
+    display: none;
+  }
+
+  .hero,
+  .dashboard-hero,
+  .upload-panel,
+  .result-panel,
+  .status-panel,
+  .pref-card,
+  .history-panel {
+    padding: 22px;
+  }
+
+  .studio-head {
+    padding: 20px 22px;
+  }
+
+  .status-layout,
+  .analysis-grid,
+  .param-grid,
+  .stats-grid,
+  .compare-box,
+  .signal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .action-row,
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .dropzone,
+  .result-empty,
+  .done-card {
+    min-height: 300px;
+  }
+
+  .preview-stage {
+    min-height: auto;
+    height: auto;
+    padding: 16px;
+  }
+
+  .preview-img {
+    height: 320px;
+    min-height: 320px;
+    max-height: 320px;
+  }
+
+  .preview-meta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .image-frame img {
+    height: 260px;
+  }
+
+  .pref-bar-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .pref-value {
+    text-align: left;
+  }
+}
+
+@media (max-width: 560px) {
+  .brand-copy span,
+  .user-meta span,
+  .metric-card p,
+  .dashboard-highlight p,
+  .field-note,
+  .micro-copy,
+  .panel-note,
+  .status-copy p,
+  .result-caption,
+  .feedback-copy {
+    font-size: 0.84rem;
+  }
+
+  .hero h1,
+  .dashboard-hero h1 {
+    font-size: 2.1rem;
+  }
+
+  .status-copy h3 {
+    font-size: 1.38rem;
+  }
 }
 </style>
 </head>
 <body>
-
-<nav>
-  <div class="logo">✨ <span>Agent</span>Face</div>
-  <div class="sep"></div>
-  <button class="tab on" data-page="workflow">美颜</button>
-  <button class="tab" data-page="dashboard">我的数据</button>
-  <span class="spacer"></span>
-  <div class="user-chip" id="userChip" onclick="$('#userModal').classList.remove('hidden')">
-    <div class="av" id="navAvatar">?</div>
-    <span id="navName">---</span>
-    <span class="live"></span>
-  </div>
-</nav>
-
-<!-- ═══════════════ WORKFLOW PAGE ═══════════════ -->
-<div class="page on" id="page-workflow">
-<div class="container">
-<div class="workflow-grid">
-
-  <!-- LEFT -->
-  <div class="card">
-    <h3>📷 上传照片</h3>
-    <div class="dropzone" id="dropzone">
-      <div class="dz-icon">🖼️</div>
-      <div class="dz-title">点击或拖拽上传人像照片</div>
-      <div class="dz-sub">JPG / PNG / WEBP · 最多 10MB</div>
-      <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
-    </div>
-    <img id="preview" class="preview-img hidden mt-12" src="" alt="">
-
-    <div class="flex gap-8 mt-12">
-      <input class="inp" id="promptInput" placeholder="美颜提示词（可选），如：自然清新">
-    </div>
-    <button class="btn btn-primary btn-full mt-12" id="startBtn" disabled>开始分析</button>
-
-    <div id="analysisSection" class="hidden mt-16">
-      <h3>🤖 MIMO 分析结果</h3>
-      <div id="analysisCard"></div>
-      <h3 class="mt-16">📐 调整参数</h3>
-      <div class="param-grid" id="paramGrid"></div>
-      <div class="flex gap-8 mt-16">
-        <button class="btn btn-primary" id="confirmBtn" style="flex:1">确认方案</button>
-        <button class="btn btn-outline" id="retryBtn" style="flex:1">重新分析</button>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">AF</div>
+      <div class="brand-copy">
+        <strong>AgentFace</strong>
+        <span>Portrait Beauty Studio</span>
       </div>
     </div>
-  </div>
 
-  <!-- RIGHT -->
-  <div class="card">
-    <h3>✨ 美颜结果</h3>
-
-    <div id="resultEmpty" style="text-align:center;padding:80px 20px;color:var(--dim)">
-      <div style="font-size:56px">✨</div>
-      <div style="margin-top:12px;font-size:14px">等待确认美颜方案…</div>
+    <div class="tabs">
+      <button class="tab on" type="button" data-page="workflow">工作台</button>
+      <button class="tab" type="button" data-page="dashboard">审美画像</button>
     </div>
 
-    <div id="resultSection" class="hidden">
-      <div class="compare-box">
-        <div class="side">
-          <img id="beforeImg" src="" alt="原图">
-          <div class="label">原图</div>
+    <span class="spacer"></span>
+
+    <button class="user-chip" type="button" id="userChip">
+      <div class="user-avatar" id="navAvatar">WE</div>
+      <div class="user-meta">
+        <span>Active User</span>
+        <strong id="navName">web-user</strong>
+      </div>
+      <span class="user-live"></span>
+    </button>
+  </header>
+
+  <main class="page on" id="page-workflow">
+    <section class="hero panel reveal" id="entryView">
+      <div class="hero-copy">
+        <p class="eyebrow">Portrait Direction</p>
+        <h1>把一次普通美颜，做成真正有审美判断的修图工作流。</h1>
+        <p class="hero-text">
+          先从首页进入独立的美颜工作界面，再上传照片、调整方案并输出结果。你的评分不会只停留在这一次，它会持续塑造后续生成的个人偏好画像。
+        </p>
+        <div class="hero-points">
+          <span>面部与光线分析</span>
+          <span>参数级微调</span>
+          <span>用户反馈记忆</span>
         </div>
-        <div class="side">
-          <img id="afterImg" src="" alt="美颜后">
-          <div class="label">美颜后</div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" type="button" id="heroStartBtn">开始美颜</button>
         </div>
       </div>
-      <button class="btn btn-outline btn-full mt-12" id="downloadBtn">下载结果</button>
-    </div>
 
-    <div id="feedbackSection" class="hidden mt-16">
-      <h3>满意吗？</h3>
-      <div class="stars-row" id="starsRow">
-        <button data-score="1">☆</button>
-        <button data-score="2">☆</button>
-        <button data-score="3">☆</button>
-        <button data-score="4">☆</button>
-        <button data-score="5">☆</button>
+      <div class="hero-metrics">
+        <div class="metric-card">
+          <span>当前用户</span>
+          <strong id="heroCurrentUser">web-user</strong>
+          <p>你正在使用独立的记忆与偏好上下文。</p>
+        </div>
+        <div class="metric-card">
+          <span>累计会话</span>
+          <strong id="heroSessions">0</strong>
+          <p>历史会话越多，系统越能贴近你的审美方向。</p>
+        </div>
+        <div class="metric-card">
+          <span>平均满意度</span>
+          <strong id="heroAverage">--</strong>
+          <p>评分会影响偏好收敛速度和推荐强度。</p>
+        </div>
+        <div class="metric-card accent">
+          <span>当前画像</span>
+          <strong id="heroSignature">待学习</strong>
+          <p id="heroSignatureNote">完成至少一次评分后，这里会出现更稳定的风格描述。</p>
+        </div>
       </div>
-      <input class="inp mt-12" id="commentInput" placeholder="说点什么（可选）">
-      <button class="btn btn-primary btn-full mt-12" id="feedbackBtn">提交反馈</button>
-    </div>
+    </section>
 
-    <div id="completedSection" class="hidden mt-16">
-      <div class="done-card">
-        <div class="icon">🎉</div>
-        <h4>完成！偏好已更新</h4>
-        <p id="doneMsg">下次美颜会更懂你的审美</p>
+    <div class="studio-view hidden" id="studioView">
+      <section class="panel studio-head reveal">
+        <div class="studio-head-copy">
+          <p class="eyebrow">Beauty Workspace</p>
+          <h2>美颜工作界面</h2>
+        </div>
+        <div class="studio-head-actions">
+          <button class="ghost-btn" type="button" id="studioBackBtn">返回首页</button>
+        </div>
+      </section>
+
+      <section class="studio-grid">
+        <div class="studio-main">
+          <article class="panel upload-panel reveal delay-1">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Step 1</p>
+                <h2>导入素材</h2>
+              </div>
+              <button class="ghost-btn hidden" type="button" id="changePhotoBtn">更换照片</button>
+            </div>
+
+            <div class="dropzone-shell">
+              <div class="dropzone" id="dropzone">
+                <div>
+                  <div class="dz-art">AI</div>
+                  <h3>点击或拖拽上传一张清晰人像</h3>
+                  <p>建议使用正面、单人、光线明确的照片。越接近真实肤质，系统给出的自动方案越稳定。</p>
+                  <small>JPG / PNG / WEBP · 最大 10MB</small>
+                  <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp">
+                </div>
+              </div>
+
+              <div class="preview-stage hidden" id="previewStage">
+                <img id="preview" class="preview-img" src="" alt="上传预览">
+                <div class="preview-meta">
+                  <div>
+                    <span>当前素材</span>
+                    <strong id="previewName">未选择图片</strong>
+                  </div>
+                  <span id="previewSize">0 MB</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-block">
+              <label class="field-label" for="promptInput">风格提示</label>
+              <input class="inp" id="promptInput" placeholder="例如：自然通透、保留皮肤质感、减轻泪沟">
+              <p class="field-note">一句话描述你想要的气质，系统会把它和分析结果一起纳入方案建议。</p>
+            </div>
+
+            <div class="action-cluster">
+              <button class="btn btn-primary btn-full" type="button" id="startBtn">上传照片并开始</button>
+              <p class="micro-copy" style="margin-top:12px">进入工作界面后，先上传照片；如果已经有照片，点击按钮就会直接启动本轮美颜。</p>
+            </div>
+
+            <div id="analysisSection" class="analysis-section hidden">
+              <div class="section-divider">
+                <div>
+                  <p class="eyebrow">Step 2</p>
+                  <h3>分析与方案</h3>
+                </div>
+                <div class="confidence-pill" id="analysisConfidence">等待结果</div>
+              </div>
+
+              <div id="analysisCard"></div>
+
+              <div class="section-divider tight">
+                <div>
+                  <p class="eyebrow">Step 3</p>
+                  <h3>手动微调</h3>
+                </div>
+                <div class="intensity-pill">
+                  <span>整体强度</span>
+                  <strong id="overallIntensity">0%</strong>
+                </div>
+              </div>
+
+              <div class="param-grid" id="paramGrid"></div>
+
+              <div class="action-row">
+                <button class="btn btn-primary" type="button" id="confirmBtn">确认方案</button>
+                <button class="btn btn-secondary" type="button" id="retryBtn">重新美颜</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel result-panel reveal delay-2">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">Step 4</p>
+                <h2>结果输出与对比</h2>
+              </div>
+            </div>
+
+            <div id="resultEmpty" class="result-empty">
+              <div class="result-orbit">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <h3 id="resultEmptyTitle">等待生成第一版效果</h3>
+              <p id="resultEmptyText">确认方案后，这里会展示原图与结果图的并排对比。</p>
+            </div>
+
+            <div id="resultSection" class="hidden">
+              <p class="result-caption" id="resultCaption">结果已就绪。你可以下载，也可以先评分再让系统继续学习你的偏好。</p>
+              <div class="compare-box">
+                <div class="side">
+                  <div class="frame-label">Before</div>
+                  <div class="image-frame">
+                    <img id="beforeImg" src="" alt="原图">
+                  </div>
+                  <div class="side-label">原图</div>
+                </div>
+                <div class="side">
+                  <div class="frame-label">After</div>
+                  <div class="image-frame">
+                    <img id="afterImg" src="" alt="美颜后">
+                  </div>
+                  <div class="side-label">美颜结果</div>
+                </div>
+              </div>
+              <div class="result-toolbar">
+                <button class="btn btn-secondary btn-full" type="button" id="downloadBtn">下载结果</button>
+              </div>
+            </div>
+
+            <div id="feedbackSection" class="feedback-card hidden">
+              <div class="section-divider">
+                <div>
+                  <p class="eyebrow">Step 5</p>
+                  <h3>你的评价</h3>
+                </div>
+              </div>
+              <p class="feedback-copy">这次效果离你的审美有多近？评分越明确，下一次的自动方案会越稳定。</p>
+              <div class="stars-row" id="starsRow">
+                <button type="button" data-score="1" aria-label="1 星">★</button>
+                <button type="button" data-score="2" aria-label="2 星">★</button>
+                <button type="button" data-score="3" aria-label="3 星">★</button>
+                <button type="button" data-score="4" aria-label="4 星">★</button>
+                <button type="button" data-score="5" aria-label="5 星">★</button>
+              </div>
+              <input class="inp mt-16" id="commentInput" placeholder="可选：例如保留更多肤质、眼部再自然一点">
+              <button class="btn btn-primary btn-full mt-16" type="button" id="feedbackBtn">提交反馈</button>
+            </div>
+
+            <div id="completedSection" class="hidden mt-16">
+              <div class="done-card">
+                <p class="eyebrow">Memory Updated</p>
+                <h3>偏好已写入你的审美画像</h3>
+                <p id="doneMsg">下次生成会更接近这次你喜欢的方向。</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <article class="panel status-panel reveal delay-3">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Session Status</p>
+              <h2>当前进度</h2>
+            </div>
+            <div class="status-pill" id="workflowStatusPill">待命</div>
+          </div>
+
+          <div class="status-layout">
+            <div class="status-summary">
+              <div class="status-copy">
+                <h3 id="workflowStatusTitle">上传一张人像，开始新的会话。</h3>
+                <p id="workflowStatusText">系统会先做分析，再给出可微调方案，最后通过你的评分逐步学习个人偏好。</p>
+              </div>
+
+              <div class="signal-grid">
+                <div class="signal-card">
+                  <span>用户标识</span>
+                  <strong id="statusUser">web-user</strong>
+                </div>
+                <div class="signal-card">
+                  <span>审美画像</span>
+                  <strong id="profileMood">待学习</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="step-list" id="stepList">
+              <div class="step-item is-active" data-step="upload">
+                <div class="step-index">01</div>
+                <div>
+                  <strong>导入照片</strong>
+                  <p>选择清晰的人像素材，建立本轮会话输入。</p>
+                </div>
+              </div>
+              <div class="step-item" data-step="analyze">
+                <div class="step-index">02</div>
+                <div>
+                  <strong>自动分析</strong>
+                  <p>识别肤况、光线、五官与可能存在的问题。</p>
+                </div>
+              </div>
+              <div class="step-item" data-step="confirm">
+                <div class="step-index">03</div>
+                <div>
+                  <strong>确认方案</strong>
+                  <p>在推荐参数基础上做最后一轮手动微调。</p>
+                </div>
+              </div>
+              <div class="step-item" data-step="result">
+                <div class="step-index">04</div>
+                <div>
+                  <strong>输出结果</strong>
+                  <p>根据确认后的参数生成第一版美颜图像。</p>
+                </div>
+              </div>
+              <div class="step-item" data-step="feedback">
+                <div class="step-index">05</div>
+                <div>
+                  <strong>偏好学习</strong>
+                  <p>通过星级和反馈，把这次选择写入长期记忆。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </main>
+
+  <main class="page" id="page-dashboard">
+    <section class="dashboard-hero panel reveal">
+      <div class="dashboard-copy">
+        <p class="eyebrow">Taste Memory</p>
+        <h1>你的偏好不是一组参数，而是一套会被系统持续学习的审美判断。</h1>
+        <p>这里会聚合累计使用次数、满意度和参数重心，帮助你看清系统现在是如何理解你的风格取向的。</p>
       </div>
-    </div>
-  </div>
 
+      <div class="dashboard-highlight">
+        <span>当前画像</span>
+        <strong id="dashboardUser">web-user</strong>
+        <p id="dashboardMood">还没有足够的评分记录，完成至少一次会话后这里会给出更稳定的风格描述。</p>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card reveal delay-1">
+        <span>累计会话</span>
+        <strong id="statSessions">0</strong>
+        <p>这是该用户 ID 参与过的全部美颜流程次数。</p>
+      </article>
+      <article class="stat-card reveal delay-2">
+        <span>平均满意度</span>
+        <strong id="statAvg">--</strong>
+        <p>你给出的星级越稳定，偏好会越快收敛。</p>
+      </article>
+      <article class="stat-card reveal delay-3">
+        <span>近期反馈</span>
+        <strong id="statTrend">--</strong>
+        <p>最近几次评分会用来判断当前方案是否在靠近你的审美。</p>
+      </article>
+    </section>
+
+    <section class="dashboard-grid">
+      <article class="panel pref-card reveal delay-1">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Preference Map</p>
+            <h2>参数偏好</h2>
+          </div>
+          <button class="ghost-btn" type="button" id="resetPrefsBtn">重置偏好</button>
+        </div>
+        <p class="panel-note" id="profileSummary">系统会根据评分逐步调整默认参数分布。</p>
+        <div class="pref-bars" id="prefBars">
+          <div class="pref-empty">加载中…</div>
+        </div>
+      </article>
+
+      <article class="panel history-panel reveal delay-2">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Session Archive</p>
+            <h2>历史记录</h2>
+          </div>
+        </div>
+        <p class="panel-note" id="historySummary">最近 20 次会话会出现在这里。</p>
+        <div class="history-list" id="historyList">
+          <div class="history-empty">加载中…</div>
+        </div>
+      </article>
+    </section>
+  </main>
 </div>
-</div>
-</div>
 
-<!-- ═══════════════ DASHBOARD PAGE ═══════════════ -->
-<div class="page" id="page-dashboard">
-<div class="container">
-
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="num" id="statSessions">0</div>
-      <div class="label">累计美颜次数</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" id="statAvg">--</div>
-      <div class="label">平均满意度</div>
-    </div>
-    <div class="stat-card">
-      <div class="num" id="statTrend">--</div>
-      <div class="label">最近评分趋势</div>
-    </div>
-  </div>
-
-  <div class="pref-card" style="margin-bottom:20px">
-    <h3 style="margin-bottom:16px">🧠 我的审美偏好</h3>
-    <div id="prefBars"></div>
-    <div style="margin-top:16px;text-align:center">
-      <button class="btn btn-outline btn-sm" id="resetPrefsBtn">重置偏好</button>
-    </div>
-  </div>
-
-  <div class="pref-card">
-    <h3 style="margin-bottom:16px">📋 美颜历史</h3>
-    <div id="historyList" class="history-list">
-      <div style="text-align:center;padding:40px;color:var(--dim)">加载中…</div>
-    </div>
-  </div>
-
-</div>
-</div>
-
-<!-- ═══════════════ USER MODAL ═══════════════ -->
-<div class="modal-mask hidden" id="userModal" onclick="if(event.target===this)$('#userModal').classList.add('hidden')">
+<div class="modal-mask hidden" id="userModal">
   <div class="modal-box">
-    <h3>👤 切换用户</h3>
-    <p style="font-size:13px;color:var(--dim);margin-bottom:12px">每个用户拥有独立的记忆和偏好</p>
-    <input class="inp" id="modalUserId" placeholder="输入用户 ID…">
-    <div class="flex gap-8 mt-12">
-      <button class="btn btn-primary" id="modalSwitchBtn" style="flex:1">切换</button>
-      <button class="btn btn-outline" onclick="$('#userModal').classList.add('hidden')" style="flex:1">取消</button>
+    <p class="eyebrow">Switch Profile</p>
+    <h3>切换用户记忆</h3>
+    <p>每个用户 ID 都有独立的偏好历史。切换后，工作台会立刻使用新的画像和统计信息。</p>
+    <input class="inp" id="modalUserId" placeholder="输入用户 ID">
+    <div class="modal-actions">
+      <button class="btn btn-primary" type="button" id="modalSwitchBtn">切换</button>
+      <button class="btn btn-secondary" type="button" id="modalCancelBtn">取消</button>
     </div>
   </div>
 </div>
+
+<div class="notice hidden" id="notice"></div>
 
 <script>
-// ═══════════════ GLOBALS ═══════════════
-const API = '/api/v1';
-const $  = s => document.querySelector(s);
-const $$ = s=>document.querySelectorAll(s);
-let sessionId=null, selectedScore=0, resultB64=null, beforeB64=null;
-let currentUser = localStorage.getItem('af_user')||'web-user';
+const API = "/api/v1";
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+let sessionId = null;
+let selectedScore = 0;
+let resultB64 = null;
+let beforeB64 = null;
+let currentUser = localStorage.getItem("af_user") || "web-user";
+let autoStartAfterUpload = false;
+let noticeTimer = null;
 
 const LABELS = {
-  skin_smoothing:'磨皮', whitening:'美白', eye_enlargement:'大眼',
-  face_slimming:'瘦脸', blush:'腮红', lip_color_adjustment:'唇色',
-  blemish_removal:'祛痘祛斑', nose_reshaping:'鼻子塑形', eyebrow_adjustment:'眉毛'
+  skin_smoothing: "磨皮",
+  whitening: "美白",
+  eye_enlargement: "大眼",
+  face_slimming: "瘦脸",
+  blush: "腮红",
+  lip_color_adjustment: "唇色",
+  blemish_removal: "祛痘祛斑",
+  nose_reshaping: "鼻子塑形",
+  eyebrow_adjustment: "眉毛"
 };
 
-// ═══════════════ NAVIGATION ═══════════════
-$$('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    $$('.tab').forEach(x=>x.classList.remove('on'));
-    t.classList.add('on');
-    $$('.page').forEach(p=>p.classList.remove('on'));
-    $('#page-'+t.dataset.page).classList.add('on');
-    if(t.dataset.page==='dashboard') loadDashboard();
-  });
-});
+const STEP_FLOW = ["upload", "analyze", "confirm", "result", "feedback"];
 
-// ═══════════════ USER ═══════════════
-function applyUser(id) {
-  currentUser=id; localStorage.setItem('af_user',id);
-  $('#navName').textContent=id;
-  $('#navAvatar').textContent=id[0]?.toUpperCase()||'?';
-  $('#userModal').classList.add('hidden');
-  loadUserStats();
+const WORKFLOW_STATES = {
+  idle: {
+    pill: "待命",
+    title: "你已经进入工作界面，先上传一张人像。",
+    text: "上传完成后，就可以正式开始本轮美颜流程。",
+    step: "upload"
+  },
+  file_ready: {
+    pill: "待分析",
+    title: "素材已就绪，点击“开始本轮美颜”即可继续。",
+    text: "如果你有明确风格方向，可以先补一条提示词，再启动本轮美颜。",
+    step: "upload"
+  },
+  analyzing: {
+    pill: "分析中",
+    title: "正在读取肤况、光线与面部特征。",
+    text: "这一步会为你生成一版初始方案，随后可以继续手动微调。",
+    step: "analyze"
+  },
+  awaiting_confirmation: {
+    pill: "待确认",
+    title: "自动方案已经生成，等待你做最后判断。",
+    text: "你可以直接接受，也可以按自己的审美把强度拉得更轻或更明显。",
+    step: "confirm"
+  },
+  beautifying: {
+    pill: "处理中",
+    title: "正在应用你确认后的美颜方案。",
+    text: "结果生成完成后会直接出现在右侧对比区域。",
+    step: "result"
+  },
+  awaiting_feedback: {
+    pill: "待评分",
+    title: "结果已生成，现在轮到你告诉系统是否命中审美。",
+    text: "星级和文字反馈都会进入记忆，用来校准下一次自动方案。",
+    step: "feedback"
+  },
+  completed: {
+    pill: "已完成",
+    title: "这轮流程已结束，偏好也已经完成更新。",
+    text: "继续上传新照片，或者去画像页查看系统现在如何理解你的风格。",
+    step: "feedback"
+  },
+  error: {
+    pill: "异常",
+    title: "流程被打断了，需要你重新尝试。",
+    text: "请检查图片清晰度或后端服务状态，然后重新发起分析。",
+    step: "upload"
+  }
+};
+
+const STAGE_LABELS = {
+  input_received: "已接收",
+  context_loaded: "读取上下文",
+  analyzed: "待确认",
+  plan_presented: "待确认",
+  plan_confirmed: "处理中",
+  beautified: "待评分",
+  feedback_collected: "已评分",
+  completed: "已完成",
+  failed: "失败",
+  error: "失败"
+};
+
+function getStudioStartLabel() {
+  return beforeB64 ? "开始本轮美颜" : "上传照片并开始";
 }
-$('#modalSwitchBtn').addEventListener('click',()=>{
-  const v=$('#modalUserId').value.trim(); if(v) applyUser(v);
-});
-$('#modalUserId').addEventListener('keydown',e=>{if(e.key==='Enter'){$('#modalSwitchBtn').click()}});
 
-async function loadUserStats() {
-  try {
-    const r=await fetch(`${API}/users/${currentUser}/preferences`);
-    const d=await r.json();
-    const n=d.total_sessions||0, avg=d.avg_satisfaction||0;
-    const e=avg>=4?'😍':avg>=3?'🙂':avg>0?'😐':'🆕';
-    if($('#page-dashboard').classList.contains('on')) {
-      $('#statSessions').textContent=n;
-      $('#statAvg').textContent=avg.toFixed(1);
-    }
-  }catch(e){}
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
 }
-applyUser(currentUser);
 
-// ═══════════════ UPLOAD ═══════════════
-const dz=$('#dropzone'), fi=$('#fileInput');
-dz.addEventListener('click',()=>fi.click());
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');loadFile(e.dataTransfer.files[0])});
-fi.addEventListener('change',()=>loadFile(fi.files[0]));
+async function fetchJSON(url, options = {}) {
+  const response = await fetch(url, options);
+  if (response.status === 204) {
+    return null;
+  }
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || data.error_message || "请求失败");
+  }
+  return data;
+}
 
-function loadFile(file) {
-  if(!file) return;
-  const r=new FileReader();
-  r.onload=()=>{
-    const b64=r.result.split(',')[1];
-    beforeB64=b64;
-    $('#preview').src=r.result; $('#preview').classList.remove('hidden');
-    dz.classList.add('hidden');
-    const b=$('#startBtn'); b.disabled=false; b.dataset.b64=b64;
+function showNotice(message, kind = "info") {
+  const notice = $("#notice");
+  clearTimeout(noticeTimer);
+  notice.textContent = message;
+  notice.className = `notice ${kind}`;
+  notice.classList.remove("hidden");
+  noticeTimer = window.setTimeout(() => {
+    notice.classList.add("hidden");
+  }, 3200);
+}
+
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) {
+    return "0 MB";
+  }
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function formatDate(isoString) {
+  if (!isoString) {
+    return "—";
+  }
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function describeSliderValue(value) {
+  if (value >= 4.2) return "明显";
+  if (value >= 3.1) return "偏强";
+  if (value >= 2.0) return "适中";
+  if (value >= 1.0) return "轻微";
+  return "克制";
+}
+
+function getDominantPreference(preferences = {}) {
+  return Object.entries(LABELS)
+    .map(([key, label]) => ({ key, label, value: Number(preferences[key] ?? 0) }))
+    .sort((a, b) => b.value - a.value)[0] || { key: "", label: "待学习", value: 0 };
+}
+
+function getStyleProfile(preferences = {}, totalSessions = 0, avgScore = 0) {
+  const safe = Object.fromEntries(Object.keys(LABELS).map((key) => [key, Number(preferences[key] ?? 0)]));
+  const groups = [
+    { label: "干净通透", value: safe.skin_smoothing + safe.whitening + safe.blemish_removal },
+    { label: "轮廓精修", value: safe.eye_enlargement + safe.face_slimming + safe.nose_reshaping },
+    { label: "轻妆提气", value: safe.blush + safe.lip_color_adjustment + safe.eyebrow_adjustment }
+  ].sort((a, b) => b.value - a.value);
+
+  const overall = Object.values(safe).reduce((sum, value) => sum + value, 0) / Object.keys(safe).length;
+  const intensity = overall >= 3.3 ? "偏明显" : overall >= 2.2 ? "适中" : "偏克制";
+  const feedbackTone = avgScore >= 4.2 ? "稳定命中" : avgScore >= 3.2 ? "正在收敛" : "还在校准";
+
+  if (!totalSessions) {
+    return {
+      short: "待学习",
+      note: "完成至少一次评分后，这里会出现更稳定的风格描述。",
+      long: "还没有足够的评分记录，完成至少一次会话后这里会给出更稳定的风格描述。",
+      summary: "当前展示的是系统默认起点，还没有形成个人化的长期偏好。"
+    };
+  }
+
+  return {
+    short: groups[0].label,
+    note: `当前更偏向 ${groups[0].label}，整体参数强度 ${intensity}。`,
+    long: `偏好重心更接近 ${groups[0].label}，整体风格 ${intensity}，最近反馈 ${feedbackTone}。`,
+    summary: `系统已累计学习 ${totalSessions} 次会话，目前对你的理解更偏向 ${groups[0].label}，整体强度 ${intensity}。`
   };
-  r.readAsDataURL(file);
 }
 
-// ═══════════════ ANALYZE ═══════════════
-$('#startBtn').addEventListener('click',async()=>{
-  const btn=$('#startBtn'); btn.disabled=true;
-  btn.innerHTML='<span class="spinner" style="width:16px;height:16px;border-width:2px;margin:0"></span> 分析中';
-  $('#analysisSection').classList.remove('hidden');
-  $('#analysisCard').innerHTML=`<div class="loading-box"><div class="spinner"></div><div style="color:var(--dim);font-size:14px">MIMO 正在分析你的照片<span class="dots"></span></div></div>`;
-  $('#paramGrid').innerHTML=''; $('#confirmBtn').style.display='';
+function topParamTags(params = {}) {
+  return Object.entries(params)
+    .map(([key, value]) => ({ key, label: LABELS[key], value: Number(value ?? 0) }))
+    .filter((item) => item.label)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3)
+    .map((item) => `${item.label} ${item.value.toFixed(1)}`);
+}
 
-  try{
-    const r=await fetch(`${API}/sessions`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({image:btn.dataset.b64, user_prompt:$('#promptInput').value||null, user_id:currentUser})
-    });
-    sessionId=(await r.json()).session_id;
-    await poll();
-  }catch(e){
-    $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">出错了：${e.message}</div></div>`;
-    btn.disabled=false; btn.textContent='重试';
+function renderScoreStars(score = 0) {
+  return Array.from({ length: 5 }, (_, index) => (
+    `<span class="${index < score ? "on" : ""}">★</span>`
+  )).join("");
+}
+
+function summarizeRecentFeedback(sessions = []) {
+  const scores = sessions
+    .map((session) => Number(session.satisfaction_score))
+    .filter((score) => Number.isFinite(score) && score > 0)
+    .slice(0, 5);
+
+  if (!scores.length) {
+    return "--";
   }
-});
 
-async function poll() {
-  for(let i=0;i<60;i++){
-    await new Promise(r=>setTimeout(r,1500));
-    const r=await fetch(`${API}/sessions/${sessionId}`);
-    const d=await r.json();
-    if(d.analysis_result && d.workflow_stage==='analyzed'){ showAnalysis(d); return; }
-    if(d.workflow_stage==='error'||d.workflow_stage==='failed'){
-      $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">分析失败：${d.error_message||'未知错误'}</div></div>`;
-      $('#startBtn').classList.remove('hidden'); $('#startBtn').disabled=false; $('#startBtn').textContent='重试'; return;
+  const avg = scores.reduce((sum, value) => sum + value, 0) / scores.length;
+  if (avg >= 4.2) {
+    return `↗ ${avg.toFixed(1)}`;
+  }
+  if (avg >= 3.2) {
+    return `→ ${avg.toFixed(1)}`;
+  }
+  return `↘ ${avg.toFixed(1)}`;
+}
+
+function updateWorkflowStatus(stateKey, overrides = {}) {
+  const state = { ...(WORKFLOW_STATES[stateKey] || WORKFLOW_STATES.idle), ...overrides };
+  $("#workflowStatusPill").textContent = state.pill;
+  $("#workflowStatusTitle").textContent = state.title;
+  $("#workflowStatusText").textContent = state.text;
+
+  const activeIndex = STEP_FLOW.indexOf(state.step);
+  $$("#stepList .step-item").forEach((item, index) => {
+    item.classList.remove("is-active", "is-done");
+    if (index < activeIndex) {
+      item.classList.add("is-done");
+    } else if (index === activeIndex) {
+      item.classList.add("is-active");
     }
+  });
+}
+
+function setWorkflowView(mode) {
+  const showStudio = mode === "studio";
+  $("#entryView").classList.toggle("hidden", showStudio);
+  $("#studioView").classList.toggle("hidden", !showStudio);
+  $("#studioView").classList.toggle("is-active", showStudio);
+  if (showStudio) {
+    window.scrollTo(0, 0);
   }
-  $('#analysisCard').innerHTML=`<div class="loading-box"><div style="color:var(--red)">分析超时，请重试</div></div>`;
-  $('#startBtn').classList.remove('hidden'); $('#startBtn').disabled=false; $('#startBtn').textContent='重试';
+}
+
+function setResultEmpty(title, text) {
+  $("#resultEmptyTitle").textContent = title;
+  $("#resultEmptyText").textContent = text;
+  $("#resultEmpty").classList.remove("hidden");
+  $("#resultSection").classList.add("hidden");
+}
+
+function setStarSelection(score) {
+  selectedScore = score;
+  $$("#starsRow button").forEach((button) => {
+    const current = Number(button.dataset.score);
+    button.classList.toggle("on", current <= score);
+  });
+}
+
+function setButtonLoading(button, loadingLabel) {
+  button.disabled = true;
+  button.innerHTML = `<span class="spinner spinner-inline"></span>${loadingLabel}`;
+}
+
+function restoreButton(button, label) {
+  button.disabled = false;
+  button.textContent = label;
+}
+
+function resetSessionUI() {
+  sessionId = null;
+  selectedScore = 0;
+  resultB64 = null;
+  setStarSelection(0);
+  $("#commentInput").value = "";
+  $("#analysisSection").classList.add("hidden");
+  $("#analysisCard").innerHTML = "";
+  $("#analysisConfidence").textContent = "等待结果";
+  $("#paramGrid").innerHTML = "";
+  $("#overallIntensity").textContent = "0%";
+  $("#confirmBtn").classList.remove("hidden");
+  restoreButton($("#confirmBtn"), "确认方案");
+  restoreButton($("#retryBtn"), "重新美颜");
+  restoreButton($("#feedbackBtn"), "提交反馈");
+  $("#resultSection").classList.add("hidden");
+  $("#feedbackSection").classList.add("hidden");
+  $("#completedSection").classList.add("hidden");
+  setResultEmpty("等待生成第一版效果", "确认方案后，这里会展示原图与结果图的并排对比。");
+  restoreButton($("#startBtn"), getStudioStartLabel());
+  $("#startBtn").classList.remove("hidden");
+  $("#startBtn").disabled = false;
+  updateWorkflowStatus(beforeB64 ? "file_ready" : "idle");
+}
+
+function updateCurrentUserUI() {
+  const avatar = (currentUser || "?").slice(0, 2).toUpperCase();
+  $("#navName").textContent = currentUser;
+  $("#navAvatar").textContent = avatar;
+  $("#heroCurrentUser").textContent = currentUser;
+  $("#statusUser").textContent = currentUser;
+  $("#dashboardUser").textContent = currentUser;
+  $("#modalUserId").value = currentUser;
+}
+
+function updateOverallIntensity() {
+  const sliders = $$("#paramGrid input[type='range']");
+  if (!sliders.length) {
+    $("#overallIntensity").textContent = "0%";
+    return;
+  }
+  const sum = sliders.reduce((total, slider) => total + slider.valueAsNumber, 0);
+  const pct = Math.round((sum / (sliders.length * 5)) * 100);
+  $("#overallIntensity").textContent = `${pct}%`;
+}
+
+function bindSlider(slider) {
+  slider.addEventListener("input", () => {
+    const value = slider.valueAsNumber;
+    slider.style.setProperty("--pct", `${(value / 5) * 100}%`);
+    const wrapper = slider.closest(".param-item");
+    wrapper.querySelector(".val").textContent = value.toFixed(1);
+    wrapper.querySelector(".param-level").textContent = describeSliderValue(value);
+    updateOverallIntensity();
+  });
+}
+
+function renderAnalysisLoading() {
+  $("#analysisSection").classList.remove("hidden");
+  $("#analysisCard").innerHTML = `
+    <div class="analysis-box loading-box">
+      <div class="spinner"></div>
+      <p>正在读取肤况、光线和面部特征，并生成第一版参数建议…</p>
+    </div>
+  `;
+  $("#analysisConfidence").textContent = "分析中";
+  $("#paramGrid").innerHTML = "";
+  $("#confirmBtn").classList.add("hidden");
+  $("#retryBtn").disabled = true;
+}
+
+function renderAnalysisFailure(message) {
+  $("#analysisSection").classList.remove("hidden");
+  $("#analysisCard").innerHTML = `
+    <div class="analysis-box">
+      <div class="reasoning-card" style="background: rgba(255, 245, 243, 0.96);">
+        <span>Process Interrupted</span>
+        <p>${esc(message)}</p>
+      </div>
+    </div>
+  `;
+  $("#analysisConfidence").textContent = "失败";
+  $("#paramGrid").innerHTML = "";
+  $("#confirmBtn").classList.add("hidden");
+  $("#retryBtn").disabled = false;
+}
+
+function renderTags(items, kind = "") {
+  if (!items || !items.length) {
+    return kind === "warn" || kind === "tag-warn"
+      ? `<span class="tag">无明显问题</span>`
+      : `<span class="tag">暂无额外标签</span>`;
+  }
+  return items.map((item) => `<span class="tag ${kind}">${esc(item)}</span>`).join("");
 }
 
 function showAnalysis(data) {
-  const ar=data.analysis_result;
-  const isFace=ar.confidence>0 && !ar.detected_issues?.includes('未检测到人脸');
-  $('#startBtn').classList.add('hidden');
+  const analysis = data.analysis_result || {};
+  const confidence = Number(analysis.confidence || 0);
+  const isFaceDetected = confidence > 0 && !(analysis.detected_issues || []).includes("未检测到人脸");
+  const confidencePct = Math.round(confidence * 100);
+  const styleProfile = getStyleProfile(analysis.suggested_params || {}, 1, 4);
 
-  if(!isFace){
-    $('#analysisCard').innerHTML=`<div style="text-align:center;padding:24px;color:var(--red)"><div style="font-size:48px">😕</div><div style="font-size:15px;font-weight:600;margin:8px 0">未检测到人脸</div><div style="font-size:13px;color:var(--dim)">${ar.reasoning||'请上传清晰的人像照片'}</div></div>`;
-    $('#confirmBtn').style.display='none'; return;
+  $("#startBtn").classList.add("hidden");
+  $("#analysisSection").classList.remove("hidden");
+  $("#retryBtn").disabled = false;
+
+  if (!isFaceDetected) {
+    $("#analysisConfidence").textContent = "未识别";
+    $("#analysisCard").innerHTML = `
+      <div class="analysis-box">
+        <div class="reasoning-card" style="background: rgba(255, 245, 243, 0.96);">
+          <span>Face Detection</span>
+          <p>${esc(analysis.reasoning || "当前图片没有检测到清晰的人脸，请更换更明确的人像后重试。")}</p>
+        </div>
+      </div>
+    `;
+    $("#paramGrid").innerHTML = "";
+    $("#confirmBtn").classList.add("hidden");
+    updateWorkflowStatus("error", {
+      title: "这张图片没有识别到有效人脸。",
+      text: analysis.reasoning || "请尝试上传更清晰、正面、单人近景的人像照片。"
+    });
+    setResultEmpty("等待新的分析结果", "更换更清晰的人像后，系统会在这里生成对比图。");
+    return;
   }
 
-  $('#confirmBtn').style.display='';
-  const pct=(ar.confidence*100).toFixed(0);
-  const bw=Math.max(20,ar.confidence*100);
-  $('#analysisCard').innerHTML=`
-    <div class="kv"><span class="k">肤色</span><span class="v">${ar.skin_tone||'—'}</span></div>
-    <div class="kv"><span class="k">皮肤</span><span class="v">${ar.skin_condition||'—'}</span></div>
-    <div class="kv"><span class="k">光线</span><span class="v">${ar.lighting||'—'}</span></div>
-    <div class="kv"><span class="k">特征</span><span class="v">${ar.detected_features?.join('、')||'无'}</span></div>
-    <div class="kv"><span class="k">问题</span><span class="v">${ar.detected_issues?.join('、')||'无'}
-      ${!ar.detected_issues?.length?'<span class="tag tag-ok">良好</span>':''}</span></div>
-    <div class="kv"><span class="k">置信</span><span class="v">${pct}%
-      <span class="conf-bar" style="width:${bw}px;background:${bw>70?'var(--green)':bw>40?'var(--orange)':'var(--red)'}"></span></span></div>
-    ${ar.reasoning?`<div class="reasoning">💡 ${ar.reasoning}</div>`:''}
+  $("#analysisConfidence").textContent = `置信 ${confidencePct}%`;
+  $("#analysisCard").innerHTML = `
+    <div class="analysis-box">
+      <div class="analysis-grid">
+        <div class="analysis-tile">
+          <span>肤色</span>
+          <strong>${esc(analysis.skin_tone || "—")}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>肤况</span>
+          <strong>${esc(analysis.skin_condition || "—")}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>光线</span>
+          <strong>${esc(analysis.lighting || "—")}</strong>
+        </div>
+        <div class="analysis-tile">
+          <span>建议方向</span>
+          <strong>${esc(styleProfile.short || "自然修饰")}</strong>
+        </div>
+      </div>
+
+      <div class="confidence-track">
+        <span style="width:${Math.max(confidencePct, 8)}%"></span>
+      </div>
+
+      <div class="analysis-group">
+        <span class="list-label">检测特征</span>
+        <div class="tag-list">${renderTags(analysis.detected_features || [])}</div>
+      </div>
+
+      <div class="analysis-group">
+        <span class="list-label">关注问题</span>
+        <div class="tag-list">${(analysis.detected_issues || []).length ? renderTags(analysis.detected_issues, "tag-warn") : '<span class="tag tag-ok">状态良好</span>'}</div>
+      </div>
+    </div>
   `;
 
-  const grid=$('#paramGrid'); grid.innerHTML='';
-  const params=ar.suggested_params||{};
-  for(const[k,l]of Object.entries(LABELS)){
-    const v=params[k]??0;
-    const it=document.createElement('div'); it.className='param-item';
-    it.innerHTML=`<label>${l}</label><input type="range" min="0" max="5" step="0.1" value="${v}" data-key="${k}" style="--pct:${v/5*100}%"><span class="val">${v.toFixed(1)}</span>`;
-    it.querySelector('input').addEventListener('input',function(){
-      this.style.setProperty('--pct',this.valueAsNumber/5*100+'%');
-      this.parentElement.querySelector('.val').textContent=this.valueAsNumber.toFixed(1);
-    });
-    grid.appendChild(it);
+  const grid = $("#paramGrid");
+  grid.innerHTML = "";
+  const params = analysis.suggested_params || {};
+  Object.entries(LABELS).forEach(([key, label]) => {
+    const value = Number(params[key] ?? 0);
+    const item = document.createElement("div");
+    item.className = "param-item";
+    item.innerHTML = `
+      <div class="param-head">
+        <label>${esc(label)}</label>
+        <span class="param-level">${describeSliderValue(value)}</span>
+      </div>
+      <div class="range-row">
+        <input type="range" min="0" max="5" step="0.1" value="${value}" data-key="${key}" style="--pct:${(value / 5) * 100}%">
+        <span class="val">${value.toFixed(1)}</span>
+      </div>
+    `;
+    const slider = item.querySelector("input");
+    bindSlider(slider);
+    grid.appendChild(item);
+  });
+
+  $("#confirmBtn").classList.remove("hidden");
+  updateOverallIntensity();
+  updateWorkflowStatus("awaiting_confirmation");
+}
+
+function showResult(data) {
+  resultB64 = data.beautified_image;
+  $("#beforeImg").src = `data:image/jpeg;base64,${beforeB64}`;
+  $("#afterImg").src = `data:image/jpeg;base64,${resultB64}`;
+  $("#resultCaption").textContent = `结果已就绪。当前输出更偏向 ${getStyleProfile(data.final_params || {}, 1, 4).short || "自然修饰"} 的方向，你可以直接下载或继续评分。`;
+  $("#resultEmpty").classList.add("hidden");
+  $("#resultSection").classList.remove("hidden");
+  $("#feedbackSection").classList.remove("hidden");
+  $("#completedSection").classList.add("hidden");
+  updateWorkflowStatus("awaiting_feedback");
+  $("#resultSection").scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function loadUserStats() {
+  updateCurrentUserUI();
+
+  try {
+    const data = await fetchJSON(`${API}/users/${encodeURIComponent(currentUser)}/preferences`);
+    const totalSessions = Number(data.total_sessions || 0);
+    const avg = totalSessions ? Number(data.avg_satisfaction || 0) : 0;
+    const styleProfile = getStyleProfile(data.preferences || {}, totalSessions, avg);
+
+    $("#heroSessions").textContent = String(totalSessions);
+    $("#heroAverage").textContent = totalSessions ? avg.toFixed(1) : "--";
+    $("#heroSignature").textContent = styleProfile.short;
+    $("#heroSignatureNote").textContent = styleProfile.note;
+    $("#profileMood").textContent = styleProfile.short;
+    $("#dashboardMood").textContent = styleProfile.long;
+  } catch (error) {
+    $("#heroSessions").textContent = "0";
+    $("#heroAverage").textContent = "--";
+    $("#heroSignature").textContent = "待学习";
+    $("#heroSignatureNote").textContent = "当前无法读取用户画像，请确认后端服务状态。";
+    $("#profileMood").textContent = "未连接";
+    $("#dashboardMood").textContent = "当前无法读取画像数据，请确认后端服务状态。";
   }
 }
 
-// ═══════════════ CONFIRM ═══════════════
-$('#confirmBtn').addEventListener('click',async()=>{
-  const btn=$('#confirmBtn'); btn.disabled=true; btn.textContent='处理中…';
-  const adj={}; $$('#paramGrid input').forEach(s=>adj[s.dataset.key]=s.valueAsNumber);
-  try{
-    const r=await fetch(`${API}/sessions/${sessionId}/confirm`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'adjust',adjustments:adj})
-    });
-    const d=await r.json();
-    if(d.beautified_image){
-      resultB64=d.beautified_image;
-      $('#beforeImg').src=`data:image/jpeg;base64,${beforeB64}`;
-      $('#afterImg').src=`data:image/jpeg;base64,${d.beautified_image}`;
-      $('#resultEmpty').classList.add('hidden');
-      $('#resultSection').classList.remove('hidden');
-      $('#feedbackSection').classList.remove('hidden');
+async function loadDashboard() {
+  $("#dashboardUser").textContent = currentUser;
+
+  try {
+    const [preferencesData, historyData] = await Promise.all([
+      fetchJSON(`${API}/users/${encodeURIComponent(currentUser)}/preferences`),
+      fetchJSON(`${API}/users/${encodeURIComponent(currentUser)}/history`)
+    ]);
+
+    const preferences = preferencesData.preferences || {};
+    const totalSessions = Number(preferencesData.total_sessions || 0);
+    const avg = totalSessions ? Number(preferencesData.avg_satisfaction || 0) : 0;
+    const styleProfile = getStyleProfile(preferences, totalSessions, avg);
+    const sessions = historyData.sessions || [];
+    const dominant = getDominantPreference(preferences);
+
+    $("#statSessions").textContent = String(totalSessions);
+    $("#statAvg").textContent = totalSessions ? avg.toFixed(1) : "--";
+    $("#statTrend").textContent = summarizeRecentFeedback(sessions);
+    $("#profileSummary").textContent = styleProfile.summary;
+    $("#dashboardMood").textContent = styleProfile.long;
+    $("#historySummary").textContent = sessions.length
+      ? `最近 ${Math.min(sessions.length, 20)} 次会话已归档。当前最高权重参数是 ${dominant.label}。`
+      : "最近 20 次会话会出现在这里。";
+
+    const barsHtml = Object.entries(LABELS).map(([key, label]) => {
+      const value = Number(preferences[key] ?? 0);
+      return `
+        <div class="pref-bar-row">
+          <div class="pref-name">${esc(label)}</div>
+          <div class="pref-track">
+            <div class="pref-fill" style="width:${(value / 5) * 100}%"></div>
+          </div>
+          <div class="pref-value">${value.toFixed(1)}</div>
+        </div>
+      `;
+    }).join("");
+    $("#prefBars").innerHTML = barsHtml || '<div class="pref-empty">还没有偏好数据。</div>';
+
+    if (!sessions.length) {
+      $("#historyList").innerHTML = '<div class="history-empty">暂无历史记录。完成一轮美颜并提交评分后，这里会开始积累你的审美轨迹。</div>';
+      return;
     }
-  }catch(e){ btn.disabled=false; btn.textContent='确认方案'; }
-});
 
-$('#retryBtn').addEventListener('click',()=>{
-  $('#analysisSection').classList.add('hidden');
-  const b=$('#startBtn'); b.classList.remove('hidden'); b.disabled=false; b.textContent='开始分析';
-});
+    $("#historyList").innerHTML = sessions.slice(0, 20).map((session, index) => {
+      const score = Number(session.satisfaction_score || 0);
+      const tags = topParamTags(session.thumbnail_params || {});
+      const date = formatDate(session.created_at);
+      const stage = STAGE_LABELS[session.workflow_stage] || session.workflow_stage || "未知阶段";
 
-// ═══════════════ STARS ═══════════════
-$$('#starsRow button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    selectedScore=+b.dataset.score;
-    $$('#starsRow button').forEach(b2=>{
-      const s=+b2.dataset.score;
-      b2.classList.toggle('on',s<=selectedScore);
-      b2.textContent=s<=selectedScore?'★':'☆';
-    });
+      return `
+        <article class="history-item">
+          <div class="history-top">
+            <div>
+              <strong>会话 ${sessions.length - index}</strong>
+              <div class="history-meta" style="margin-top:8px">
+                <span>${esc(date)}</span>
+                <span>${esc(stage)}</span>
+              </div>
+            </div>
+            <div class="history-stars">${renderScoreStars(score)}</div>
+          </div>
+          <div class="history-tags">
+            ${tags.length ? tags.map((tag) => `<span class="tag">${esc(tag)}</span>`).join("") : '<span class="tag">默认参数</span>'}
+          </div>
+        </article>
+      `;
+    }).join("");
+  } catch (error) {
+    $("#prefBars").innerHTML = '<div class="pref-empty">当前无法加载偏好数据。</div>';
+    $("#historyList").innerHTML = '<div class="history-empty">当前无法加载历史记录。</div>';
+    $("#historySummary").textContent = "请确认后端服务状态后重试。";
+  }
+}
+
+async function pollAnalysis() {
+  for (let index = 0; index < 60; index += 1) {
+    await new Promise((resolve) => window.setTimeout(resolve, 1500));
+    const data = await fetchJSON(`${API}/sessions/${sessionId}`);
+
+    if (data.analysis_result && ["analyzed", "plan_presented"].includes(data.workflow_stage)) {
+      showAnalysis(data);
+      return;
+    }
+
+    if (data.workflow_stage === "error" || data.workflow_stage === "failed") {
+      throw new Error(data.error_message || "分析失败");
+    }
+  }
+
+  throw new Error("分析超时，请稍后重试");
+}
+
+function openUserModal() {
+  $("#userModal").classList.remove("hidden");
+  $("#modalUserId").focus();
+  $("#modalUserId").select();
+}
+
+function closeUserModal() {
+  $("#userModal").classList.add("hidden");
+}
+
+function applyUser(userId) {
+  currentUser = userId;
+  localStorage.setItem("af_user", currentUser);
+  updateCurrentUserUI();
+  resetSessionUI();
+  loadUserStats();
+  if ($("#page-dashboard").classList.contains("on")) {
+    loadDashboard();
+  }
+  closeUserModal();
+}
+
+$$("#starsRow button").forEach((button) => {
+  button.addEventListener("click", () => {
+    setStarSelection(Number(button.dataset.score));
   });
 });
 
-// ═══════════════ FEEDBACK ═══════════════
-$('#feedbackBtn').addEventListener('click',async()=>{
-  if(selectedScore<1){alert('请先打分⭐');return;}
-  const btn=$('#feedbackBtn'); btn.disabled=true; btn.textContent='提交中…';
-  try{
-    await fetch(`${API}/sessions/${sessionId}/feedback`,{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({satisfaction_score:selectedScore,comments:$('#commentInput').value||null})
-    });
-    $('#feedbackSection').classList.add('hidden');
-    $('#completedSection').classList.remove('hidden');
-    const dir=selectedScore>=4?'靠拢':selectedScore>=3?'微调':'远离';
-    $('#doneMsg').textContent=`偏好已向这次方案${dir} · 下次会更懂你`;
-  }catch(e){
-    btn.disabled=false; btn.textContent='提交反馈';
+$$(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => {
+    $$(".tab").forEach((item) => item.classList.remove("on"));
+    tab.classList.add("on");
+    $$(".page").forEach((page) => page.classList.remove("on"));
+    $(`#page-${tab.dataset.page}`).classList.add("on");
+    if (tab.dataset.page === "dashboard") {
+      loadDashboard();
+    }
+  });
+});
+
+$("#userChip").addEventListener("click", openUserModal);
+$("#modalCancelBtn").addEventListener("click", closeUserModal);
+$("#userModal").addEventListener("click", (event) => {
+  if (event.target === event.currentTarget) {
+    closeUserModal();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeUserModal();
   }
 });
 
-$('#downloadBtn').addEventListener('click',()=>{
-  if(!resultB64)return;
-  const a=document.createElement('a');
-  a.href=`data:image/jpeg;base64,${resultB64}`; a.download='美颜结果.jpg'; a.click();
+$("#modalSwitchBtn").addEventListener("click", () => {
+  const value = $("#modalUserId").value.trim();
+  if (!value) {
+    showNotice("请输入有效的用户 ID。", "error");
+    return;
+  }
+  applyUser(value);
 });
 
-// ═══════════════ DASHBOARD ═══════════════
-async function loadDashboard() {
-  try{
-    const r=await fetch(`${API}/users/${currentUser}/preferences`);
-    const d=await r.json();
-    const n=d.total_sessions||0, avg=d.avg_satisfaction||0;
-    $('#statSessions').textContent=n;
-    $('#statAvg').textContent=avg.toFixed(1);
+$("#modalUserId").addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    $("#modalSwitchBtn").click();
+  }
+});
 
-    // Trend icon
-    const trend=d.satisfaction_trend||[];
-    const recent=trend.slice(-5);
-    if(recent.length>0){
-      const avgR=recent.reduce((a,b)=>a+b,0)/recent.length;
-      const dir=avgR>=4?'↑':avgR>=3?'→':'↓';
-      $('#statTrend').textContent=`${dir} ${avgR.toFixed(1)}`;
-    }else{$('#statTrend').textContent='--'}
+const dropzone = $("#dropzone");
+const fileInput = $("#fileInput");
+const heroStartBtn = $("#heroStartBtn");
+const startBtn = $("#startBtn");
+const studioBackBtn = $("#studioBackBtn");
 
-    // Preference bars
-    const prefs=d.preferences||{};
-    let bars='';
-    for(const[k,l]of Object.entries(LABELS)){
-      const v=prefs[k]??0;
-      bars+=`<div class="pref-bar-row"><span class="name">${l}</span><div class="track"><div class="fill" style="width:${v/5*100}%"></div></div><span class="num">${v.toFixed(1)}</span></div>`;
-    }
-    $('#prefBars').innerHTML=bars||'<div style="text-align:center;color:var(--dim);padding:20px">还没有数据，做完美颜后这里会显示你的偏好</div>';
+function openFilePicker(shouldAutoStart = false) {
+  autoStartAfterUpload = shouldAutoStart;
+  fileInput.value = "";
+  fileInput.click();
+}
 
-    // History
-    const hr=await fetch(`${API}/users/${currentUser}/history`);
-    const hd=await hr.json();
-    const sessions=hd.sessions||[];
-    if(sessions.length===0){
-      $('#historyList').innerHTML='<div style="text-align:center;padding:40px;color:var(--dim)">暂无历史记录</div>';
-    }else{
-      let html='';
-      for(const s of sessions.slice(0,20)){
-        const date=s.created_at?new Date(s.created_at).toLocaleDateString('zh-CN'):'—';
-        const score=s.satisfaction_score||'—';
-        const stars=score>=4?'★'.repeat(score):score>=1?'☆'.repeat(5-score)+'★'.repeat(score):'—';
-        html+=`<div class="history-item"><div class="top"><span class="date">${date}</span><span class="score" style="color:${score>=4?'var(--green)':score>=3?'var(--orange)':'var(--red)'}">${stars}</span></div></div>`;
-      }
-      $('#historyList').innerHTML=html;
-    }
-  }catch(e){
-    console.error(e);
+async function startBeautifyFlow() {
+  const button = startBtn;
+  setButtonLoading(button, "美颜中");
+  renderAnalysisLoading();
+  setResultEmpty("分析完成后将在这里生成结果", "当前正在进行五官、肤况与光线判断，请稍候。");
+  updateWorkflowStatus("analyzing");
+
+  try {
+    const data = await fetchJSON(`${API}/sessions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        image: beforeB64,
+        user_prompt: $("#promptInput").value.trim() || null,
+        user_id: currentUser
+      })
+    });
+
+    sessionId = data.session_id;
+    await pollAnalysis();
+  } catch (error) {
+    renderAnalysisFailure(error.message);
+    updateWorkflowStatus("error", {
+      title: "美颜流程没有成功完成。",
+      text: error.message
+    });
+    showNotice(error.message, "error");
+  } finally {
+    restoreButton(button, getStudioStartLabel());
   }
 }
 
-// Reset preferences
-$('#resetPrefsBtn').addEventListener('click', async()=>{
-  if(!confirm('确定要重置所有美颜偏好为默认值吗？历史记录不受影响。')) return;
-  try{
-    await fetch(`${API}/users/${currentUser}/preferences`, {method:'DELETE'});
-    loadDashboard();
-  }catch(e){alert('重置失败: '+e.message);}
+async function handleStartEntry() {
+  if (startBtn.disabled) {
+    return;
+  }
+
+  if (!beforeB64) {
+    openFilePicker(true);
+    return;
+  }
+
+  autoStartAfterUpload = false;
+  await startBeautifyFlow();
+}
+
+dropzone.addEventListener("click", () => openFilePicker(false));
+$("#changePhotoBtn").addEventListener("click", () => openFilePicker(false));
+heroStartBtn.addEventListener("click", () => {
+  setWorkflowView("studio");
+  updateWorkflowStatus(beforeB64 ? "file_ready" : "idle");
+});
+studioBackBtn.addEventListener("click", () => {
+  setWorkflowView("entry");
 });
 
-// Init
+dropzone.addEventListener("dragover", (event) => {
+  event.preventDefault();
+  dropzone.classList.add("drag");
+});
+
+dropzone.addEventListener("dragleave", () => {
+  dropzone.classList.remove("drag");
+});
+
+dropzone.addEventListener("drop", (event) => {
+  event.preventDefault();
+  dropzone.classList.remove("drag");
+  loadFile(event.dataTransfer.files[0]);
+});
+
+fileInput.addEventListener("change", () => {
+  loadFile(fileInput.files[0]);
+});
+
+function loadFile(file) {
+  if (!file) {
+    return;
+  }
+
+  const acceptedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!acceptedTypes.includes(file.type)) {
+    showNotice("仅支持 JPG、PNG 或 WEBP 图片。", "error");
+    return;
+  }
+
+  if (file.size > 10 * 1024 * 1024) {
+    showNotice("图片不能超过 10MB。", "error");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const result = String(reader.result || "");
+    beforeB64 = result.split(",")[1] || "";
+    $("#preview").src = result;
+    $("#previewStage").classList.remove("hidden");
+    $("#dropzone").classList.add("hidden");
+    $("#changePhotoBtn").classList.remove("hidden");
+    $("#previewName").textContent = file.name;
+    $("#previewSize").textContent = formatFileSize(file.size);
+    resetSessionUI();
+    $("#startBtn").classList.remove("hidden");
+    if (autoStartAfterUpload) {
+      showNotice("图片已载入，正在开始美颜。", "success");
+      window.setTimeout(() => {
+        handleStartEntry();
+      }, 60);
+      return;
+    }
+    showNotice("图片已载入，点击“开始本轮美颜”即可继续。", "success");
+  };
+  reader.readAsDataURL(file);
+}
+
+startBtn.addEventListener("click", () => {
+  handleStartEntry();
+});
+
+$("#confirmBtn").addEventListener("click", async () => {
+  if (!sessionId) {
+    showNotice("当前没有可确认的会话。", "error");
+    return;
+  }
+
+  const button = $("#confirmBtn");
+  const adjustments = {};
+  $$("#paramGrid input[type='range']").forEach((slider) => {
+    adjustments[slider.dataset.key] = slider.valueAsNumber;
+  });
+
+  setButtonLoading(button, "生成中");
+  $("#retryBtn").disabled = true;
+  setResultEmpty("正在生成结果图像", "系统正在套用你确认后的方案，这通常只需要几秒。");
+  updateWorkflowStatus("beautifying");
+
+  try {
+    const data = await fetchJSON(`${API}/sessions/${sessionId}/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "adjust",
+        adjustments
+      })
+    });
+
+    if (!data.beautified_image) {
+      throw new Error("后端未返回美颜结果。");
+    }
+
+    showResult(data);
+  } catch (error) {
+    setResultEmpty("结果生成失败", error.message);
+    updateWorkflowStatus("error", {
+      title: "方案确认后未能成功输出图像。",
+      text: error.message
+    });
+    showNotice(error.message, "error");
+  } finally {
+    restoreButton(button, "确认方案");
+    $("#retryBtn").disabled = false;
+  }
+});
+
+$("#retryBtn").addEventListener("click", () => {
+  restoreButton($("#startBtn"), getStudioStartLabel());
+  $("#startBtn").disabled = false;
+  $("#startBtn").classList.remove("hidden");
+  $("#analysisSection").classList.add("hidden");
+  $("#resultSection").classList.add("hidden");
+  $("#feedbackSection").classList.add("hidden");
+  $("#completedSection").classList.add("hidden");
+  setResultEmpty("等待新的美颜结果", "重新开始后，这里会根据新的方案展示更新后的结果。");
+  updateWorkflowStatus(beforeB64 ? "file_ready" : "idle");
+});
+
+$("#feedbackBtn").addEventListener("click", async () => {
+  if (selectedScore < 1) {
+    showNotice("请先选择星级评分。", "error");
+    return;
+  }
+
+  if (!sessionId) {
+    showNotice("当前没有可提交反馈的会话。", "error");
+    return;
+  }
+
+  const button = $("#feedbackBtn");
+  setButtonLoading(button, "提交中");
+
+  try {
+    await fetchJSON(`${API}/sessions/${sessionId}/feedback`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        satisfaction_score: selectedScore,
+        comments: $("#commentInput").value.trim() || null
+      })
+    });
+
+    $("#feedbackSection").classList.add("hidden");
+    $("#completedSection").classList.remove("hidden");
+    const direction = selectedScore >= 4 ? "继续靠近" : selectedScore === 3 ? "做小幅微调" : "适当远离";
+    $("#doneMsg").textContent = `系统会根据这次评分 ${direction} 当前方案，下次会更接近你真正喜欢的方向。`;
+    updateWorkflowStatus("completed");
+    showNotice("反馈已提交，偏好画像已更新。", "success");
+    loadUserStats();
+    if ($("#page-dashboard").classList.contains("on")) {
+      loadDashboard();
+    }
+  } catch (error) {
+    showNotice(error.message, "error");
+  } finally {
+    restoreButton(button, "提交反馈");
+  }
+});
+
+$("#downloadBtn").addEventListener("click", () => {
+  if (!resultB64) {
+    showNotice("当前没有可下载的结果。", "error");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = `data:image/jpeg;base64,${resultB64}`;
+  link.download = "agentface-result.jpg";
+  link.click();
+});
+
+$("#resetPrefsBtn").addEventListener("click", async () => {
+  const confirmed = window.confirm("确定要重置这个用户的偏好吗？历史记录会保留，但后续推荐会回到默认起点。");
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await fetchJSON(`${API}/users/${encodeURIComponent(currentUser)}/preferences`, {
+      method: "DELETE"
+    });
+    showNotice("偏好已重置。", "success");
+    loadUserStats();
+    loadDashboard();
+  } catch (error) {
+    showNotice(error.message, "error");
+  }
+});
+
+updateCurrentUserUI();
+resetSessionUI();
+setWorkflowView("entry");
 loadUserStats();
 </script>
 </body>
