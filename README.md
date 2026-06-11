@@ -133,15 +133,6 @@ uvicorn agent_face.main:app --reload --host 0.0.0.0 --port 8000
 - `http://localhost:8000/app` 查看工作台
 - `http://localhost:8000/docs` 查看 OpenAPI 文档
 
-## GitHub Demo
-
-如果你希望专家直接从仓库 README 点击进入在线体验，请在仓库设置中开启 GitHub Pages：
-
-1. 打开 `Settings -> Pages`
-2. `Build and deployment` 选择 `Deploy from a branch`
-3. 分支选择 `main`，目录选择 `/docs`
-4. 保存后，演示页会发布到 `https://hotgirlllllllll.github.io/AgentFace/`
-
 ## API Snapshot
 
 | Method | Path | Purpose |
