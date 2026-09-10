@@ -169,6 +169,10 @@ class MAFOrchestrator:
         self,
         image_b64: str,
         params: BeautifyParams,
+        src_prompt: str = "",
+        target_prompt: str = "",
+        edit_regions: list[dict] | None = None,
+        seed: int | None = None,
         user_id: str = "anonymous",
         session_id: str = "unknown",
     ) -> MAFTaskResult:
@@ -209,6 +213,10 @@ class MAFOrchestrator:
             input_data = {
                 "image_b64": working_image,
                 "params": params,
+                "src_prompt": src_prompt,
+                "target_prompt": target_prompt,
+                "edit_regions": edit_regions or [],
+                "seed": seed,
             }
             context = MiddlewareContext(
                 user_id=user_id,
@@ -221,6 +229,10 @@ class MAFOrchestrator:
                 result = await self._beautification_agent.beautify(
                     image_b64=data["image_b64"],
                     params=data["params"],
+                    src_prompt=data.get("src_prompt", ""),
+                    target_prompt=data.get("target_prompt", ""),
+                    edit_regions=data.get("edit_regions", []),
+                    seed=data.get("seed"),
                 )
                 return {"beautified_image_b64": result}
 

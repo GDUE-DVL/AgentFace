@@ -26,7 +26,7 @@ class BeautificationAgent:
         self._tool = tool or BeautifyMCPTool()
 
     async def beautify(
-        self, image_b64: str, params: BeautifyParams
+        self, image_b64: str, params: BeautifyParams, src_prompt: str = "", target_prompt: str = "", edit_regions: list[dict] | None = None, seed: int | None = None
     ) -> str:
         """
         Apply beautification to a facial image.
@@ -46,6 +46,10 @@ class BeautificationAgent:
         return await self._tool.execute(
             image_b64=image_b64,
             params=params,
+            src_prompt=src_prompt,
+            target_prompt=target_prompt,
+            edit_regions=edit_regions or [],
+            seed=seed,
         )
 
     async def health_check(self) -> dict:

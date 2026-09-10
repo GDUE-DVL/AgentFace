@@ -1876,6 +1876,7 @@ body::after {
               </div>
               <div class="result-toolbar">
                 <button class="btn btn-secondary btn-full" type="button" id="downloadBtn">下载结果</button>
+                <button class="btn btn-primary btn-full" type="button" id="rerunBtn">换种子重跑</button>
               </div>
             </div>
 
@@ -2968,6 +2969,34 @@ $("#downloadBtn").addEventListener("click", () => {
   link.href = `data:image/jpeg;base64,${resultB64}`;
   link.download = "agentface-result.jpg";
   link.click();
+});
+
+$("#rerunBtn").addEventListener("click", async () => {
+  if (!sessionId) {
+    showNotice("当前没有可重跑的会话。", "error");
+    return;
+  }
+
+  const button = $("#rerunBtn");
+  setButtonLoading(button, "重跑中");
+  updateWorkflowStatus("beautifying");
+  try {
+    const data = await fetchJSON(`${API}/sessions/${sessionId}/rerun`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reason: "人工复核后重跑" })
+    });
+    if (!data.beautified_image) {
+      throw new Error("后端未返回重跑结果。");
+    }
+    showResult(data);
+    showNotice("已换用新种子重新生成。", "success");
+  } catch (error) {
+    updateWorkflowStatus("error", { title: "重跑失败。", text: error.message });
+    showNotice(error.message, "error");
+  } finally {
+    restoreButton(button, "换种子重跑");
+  }
 });
 
 $("#resetPrefsBtn").addEventListener("click", async () => {

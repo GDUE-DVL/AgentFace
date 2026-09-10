@@ -38,6 +38,14 @@ class BeautificationRequest:
 
     image_b64: str
     params: BeautifyParams
+    src_prompt: str = ""
+    target_prompt: str = ""
+    # Normalized defect boxes from the visual audit.  These are optional; an
+    # empty list preserves the original full-face HEdit path.
+    edit_regions: list[dict] = field(default_factory=list)
+    # Optional per-attempt seed.  Reruns use this to guarantee a new result;
+    # ordinary runs leave it unset and use the model service default.
+    seed: Optional[int] = None
 
 
 @dataclass

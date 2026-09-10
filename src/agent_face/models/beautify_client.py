@@ -12,7 +12,9 @@ Returns: binary image
 
 import base64
 import io
+import json
 import logging
+import os
 import time
 
 import httpx
@@ -23,7 +25,8 @@ from agent_face.langgraph_brain.state import BeautifyParams, BEAUTIFY_PARAM_LABE
 
 logger = logging.getLogger(__name__)
 
-MAX_SIZE = 512  # Downsample before sending to model
+MAX_SIZE = int(os.environ.get("BEAUTIFY_MAX_SIZE", "512"))
+SEND_FORMAT = os.environ.get("BEAUTIFY_IMAGE_FORMAT", "JPEG").upper()
 
 
 class BeautifyModelClient:
@@ -38,50 +41,6 @@ class BeautifyModelClient:
         self._image_guidance = settings.beauty_image_guidance_scale
         self._seed = settings.beauty_seed
 
-    # English labels for beauty model prompt
-    PARAM_LABELS_EN = {
-        "skin_smoothing": "skin smoothing",
-        "whitening": "skin brightening",
-        "eye_enlargement": "eye enlarging",
-        "face_slimming": "face slimming",
-        "blush": "blush",
-        "lip_color_adjustment": "lip color adjustment",
-        "blemish_removal": "blemish removal",
-        "nose_reshaping": "nose reshaping",
-        "eyebrow_adjustment": "eyebrow adjustment",
-    }
-
-    @staticmethod
-    def params_to_description(params: BeautifyParams) -> str:
-        """Convert beautification parameters to English prompt with levels."""
-        if not any(params.get(k, 0) > 0 for k in BeautifyModelClient.PARAM_LABELS_EN):
-            return "natural beauty, clean skin, professional photo"
-
-        # Main beauty instruction with specific levels
-        lines = ["Beautify this portrait photo."]
-        lines.append("Apply the following adjustments at the specified intensity levels (0-5 scale):")
-
-        for key, en_label in BeautifyModelClient.PARAM_LABELS_EN.items():
-            value = params.get(key, 0)
-            if value > 0:
-                if value <= 1.0:
-                    level = "very light"
-                elif value <= 2.0:
-                    level = "light"
-                elif value <= 3.0:
-                    level = "moderate"
-                elif value <= 4.0:
-                    level = "strong"
-                else:
-                    level = "very strong"
-                lines.append(f"  - {en_label}: {level} (level {value:.1f}/5.0)")
-
-        # Style guidance
-        lines.append("")
-        lines.append("Style guidance: natural look, professional photo quality, preserve facial identity and features.")
-
-        return "\n".join(lines)
-
     @staticmethod
     def _downsample(image_b64: str) -> bytes:
         """Downsample image to MAX_SIZE and return JPEG bytes."""
@@ -94,35 +53,47 @@ class BeautifyModelClient:
             image = image.resize((int(w*scale), int(h*scale)), Image.LANCZOS)
             logger.info(f"beautify: downsampled {w}x{h} → {image.size[0]}x{image.size[1]}")
         buf = io.BytesIO()
-        image.save(buf, format="JPEG", quality=92)
+        if SEND_FORMAT == "PNG":
+            image.save(buf, format="PNG")
+        else:
+            image.save(buf, format="JPEG", quality=95)
         return buf.getvalue()
 
-    async def beautify(self, image_b64: str, params: BeautifyParams) -> str:
+    async def beautify(self, image_b64: str, params: BeautifyParams, src_prompt: str = "", target_prompt: str = "", edit_regions: list[dict] | None = None, seed: int | None = None) -> str:
         """
         Call the beautification model API.
 
+        P2P mode: the model's source/target prompt pair is passed straight
+        through as the H-Edit conditions — no manual param-tier mapping.
+
         1. Downsample to 512px
-        2. Generate natural language prompt from params
+        2. Use target_description as the main prompt condition
         3. POST to beauty model
         4. Return base64-encoded result
         """
         t0 = time.monotonic()
-        prompt = self.params_to_description(params)
+        # 直接使用模型输出的 P2P 提示词组，不再人工映射档位
+        prompt = target_prompt or "clean smooth skin, natural skin texture"
         image_bytes = self._downsample(image_b64)
+        upload_name = "face.png" if SEND_FORMAT == "PNG" else "face.jpg"
+        upload_type = "image/png" if SEND_FORMAT == "PNG" else "image/jpeg"
 
         logger.info(f"beautify: sending to {self._base_url}, prompt={prompt[:80]}...")
 
         async with httpx.AsyncClient(timeout=self._timeout) as client:
             resp = await client.post(
                 f"{self._base_url}/beautify",
-                files={"image": ("face.jpg", image_bytes, "image/jpeg")},
+                files={"image": (upload_name, image_bytes, upload_type)},
                 data={
                     "prompt": prompt,
+                    "src_prompt": src_prompt,
+                    "target_prompt": target_prompt,
+                    "edit_regions": json.dumps(edit_regions or [], ensure_ascii=False),
                     "model": self._model_name,
                     "steps": str(self._steps),
                     "guidance_scale": str(self._guidance),
                     "image_guidance_scale": str(self._image_guidance),
-                    "seed": str(self._seed),
+                    "seed": str(seed if seed is not None else self._seed),
                 },
             )
             resp.raise_for_status()

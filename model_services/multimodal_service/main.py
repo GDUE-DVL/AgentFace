@@ -19,7 +19,7 @@ from typing import Optional
 from dotenv import load_dotenv
 
 # Load .env from project root
-_env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+_env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(_env_path)
 
 import httpx
@@ -157,7 +157,6 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
                     "type": "image_url",
                     "image_url": {
                         "url": f"data:image/jpeg;base64,{request.image_b64}",
-                        "detail": "high",
                     },
                 },
             ],
@@ -174,8 +173,9 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse:
             json={
                 "model": LLM_MODEL,
                 "messages": messages,
-                "max_tokens": 4096,
+                "max_completion_tokens": 1024,
                 "temperature": 0.3,
+                "thinking": {"type": "disabled"},
             },
         )
 

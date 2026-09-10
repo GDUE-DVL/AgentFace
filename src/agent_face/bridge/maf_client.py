@@ -129,6 +129,10 @@ class MAFBridgeClient:
         task_result = await self._orchestrator.delegate_beautification(
             image_b64=request.image_b64,
             params=request.params,
+            src_prompt=request.src_prompt,
+            target_prompt=request.target_prompt,
+            edit_regions=request.edit_regions,
+            seed=request.seed,
             user_id=user_id,
             session_id=session_id,
         )

@@ -51,9 +51,16 @@ async def apply_beautification(
     )
 
     try:
+        analysis = state.get("analysis_result") or {}
+        src_prompt = analysis.get("source_description", "") if isinstance(analysis, dict) else ""
+        target_prompt = analysis.get("target_description", "") if isinstance(analysis, dict) else ""
+        edit_regions = analysis.get("edit_regions", []) if isinstance(analysis, dict) else []
         request = BeautificationRequest(
             image_b64=state["input_image_b64"],
             params=final_params,
+            src_prompt=src_prompt,
+            target_prompt=target_prompt,
+            edit_regions=edit_regions or [],
         )
 
         response = await bridge.apply_beautification(

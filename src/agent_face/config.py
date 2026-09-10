@@ -21,7 +21,7 @@ class Settings(BaseSettings):
 
     # ── Beautification Model ──
     beauty_model_name: str = "deepfrr"     # deepfrr or ffhqr
-    beauty_steps: int = 30                 # inference steps (higher = better, slower)
+    beauty_steps: int = 50                 # inference steps (higher = better, slower)
     beauty_guidance_scale: float = 3.0     # text guidance strength
     beauty_image_guidance_scale: float = 1.5  # original image preservation
     beauty_seed: int = 42

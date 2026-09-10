@@ -40,6 +40,23 @@ class AnalysisResultModel(BaseModel):
     suggested_params: BeautifyParamsModel = Field(description="建议的美颜参数")
     reasoning: str = Field(description="分析理由")
     confidence: float = Field(ge=0.0, le=1.0, description="置信度")
+    # Expose the exact bilingual-safe P2P prompt pair so a downstream model
+    # (e.g. RealVisXL in a cascade) receives the same Agent decision that HEdit
+    # would receive.  These are optional for backward compatibility.
+    identity_features: str = ""
+    expression_state: str = ""
+    source_skin: str = ""
+    target_skin: str = ""
+    source_description: str = ""
+    target_description: str = ""
+    edit_regions: list[dict] = Field(default_factory=list)
+    scar_check: str = "absent"
+    scar_location: str = ""
+    scar_bbox: list[float] = Field(default_factory=list)
+    acne_check: str = "absent"
+    acne_bbox: list[float] = Field(default_factory=list)
+    wrinkle_check: str = "absent"
+    wrinkle_bbox: list[float] = Field(default_factory=list)
 
 
 # ── Request Models ───────────────────────────────────────────────
@@ -72,6 +89,17 @@ class SubmitFeedbackRequest(BaseModel):
     comments: Optional[str] = Field(default=None, description="文字反馈")
 
 
+class RerunRequest(BaseModel):
+    """Human-in-the-loop rerun request.
+
+    If seed is omitted, the server advances from the configured base seed
+    so each click produces a deterministic but different attempt.
+    """
+
+    seed: Optional[int] = Field(default=None, ge=0, le=2**31 - 1, description="可选随机种子")
+    reason: Optional[str] = Field(default=None, max_length=500, description="本次重跑原因")
+
+
 # ── Response Models ──────────────────────────────────────────────
 
 
@@ -89,6 +117,9 @@ class SessionResponse(BaseModel):
     beautified_image: Optional[str] = None  # base64
     final_params: Optional[BeautifyParamsModel] = None
     error_message: Optional[str] = None
+    rerun_count: int = 0
+    current_seed: Optional[int] = None
+    rerun_history: list[dict] = Field(default_factory=list)
 
 
 class CreateSessionResponse(BaseModel):

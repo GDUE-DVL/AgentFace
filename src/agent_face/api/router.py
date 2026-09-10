@@ -20,6 +20,7 @@ from agent_face.api.schemas import (
     CreateSessionResponse,
     ConfirmPlanRequest,
     SubmitFeedbackRequest,
+    RerunRequest,
     SessionResponse,
     UserPreferencesResponse,
     SessionHistoryResponse,
@@ -32,6 +33,9 @@ from agent_face.langgraph_brain.state import BeautifyWorkflowState
 from agent_face.langgraph_brain.memory.preferences import get_user_preferences
 from agent_face.langgraph_brain.memory.feedback import get_user_feedback_summary
 from agent_face.langgraph_brain.memory.history import get_session_history
+from agent_face.bridge.types import BeautificationRequest
+from agent_face.bridge.maf_client import BridgeError
+from agent_face.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +77,20 @@ def _format_session_response(state: dict) -> SessionResponse:
             ),
             reasoning=analysis.get("reasoning", ""),
             confidence=analysis.get("confidence", 0.0),
+            identity_features=analysis.get("identity_features", ""),
+            expression_state=analysis.get("expression_state", ""),
+            source_skin=analysis.get("source_skin", ""),
+            target_skin=analysis.get("target_skin", ""),
+            source_description=analysis.get("source_description", ""),
+            target_description=analysis.get("target_description", ""),
+            edit_regions=analysis.get("edit_regions", []) or [],
+            scar_check=analysis.get("scar_check", "absent"),
+            scar_location=analysis.get("scar_location", ""),
+            scar_bbox=analysis.get("scar_bbox", []) or [],
+            acne_check=analysis.get("acne_check", "absent"),
+            acne_bbox=analysis.get("acne_bbox", []) or [],
+            wrinkle_check=analysis.get("wrinkle_check", "absent"),
+            wrinkle_bbox=analysis.get("wrinkle_bbox", []) or [],
         )
 
     final_params = state.get("final_params")
@@ -90,6 +108,9 @@ def _format_session_response(state: dict) -> SessionResponse:
         beautified_image=state.get("beautified_image_b64"),
         final_params=final_params_model,
         error_message=state.get("error_message"),
+        rerun_count=int(state.get("rerun_count", 0) or 0),
+        current_seed=state.get("current_seed"),
+        rerun_history=state.get("rerun_history", []) or [],
     )
 
 
@@ -134,6 +155,9 @@ async def create_session(
         "created_at": datetime.now(timezone.utc).isoformat(),
         "workflow_stage": "start",
         "retry_count": 0,
+        "rerun_count": 0,
+        "current_seed": settings.beauty_seed,
+        "rerun_history": [],
     }
 
     config = {
@@ -318,6 +342,88 @@ async def submit_feedback(
     )
 
     return _format_session_response(final_state)
+
+
+@router.post(
+    "/sessions/{session_id}/rerun",
+    response_model=SessionResponse,
+    tags=["Sessions"],
+)
+async def rerun_session(
+    session_id: str,
+    request_data: RerunRequest,
+    req: Request,
+):
+    """Rerun the same image/plan with a different seed.
+
+    This is the human-in-the-loop correction path: reviewers can keep the
+    original analysis and prompts, click rerun, and receive a fresh output.
+    Every attempt is retained in ``rerun_history`` in the session checkpoint.
+    """
+    graph = req.app.state.graph
+    bridge = req.app.state.bridge
+    config = {"configurable": {"thread_id": session_id, "store": graph.store, "bridge": bridge}}
+    current_state = await graph.aget_state(config)
+    if current_state is None or current_state.values is None:
+        raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+
+    state = current_state.values
+    stage = state.get("workflow_stage", "")
+    if stage not in ("beautified", "feedback_collected", "completed"):
+        raise HTTPException(
+            status_code=409,
+            detail=f"当前会话处于'{stage}'阶段，只有已有结果时才能重跑",
+        )
+    if not state.get("input_image_b64") or not state.get("final_params"):
+        raise HTTPException(status_code=409, detail="会话缺少原图或已确认方案，无法重跑")
+
+    rerun_count = int(state.get("rerun_count", 0) or 0)
+    previous_seed = state.get("current_seed")
+    base_seed = int(previous_seed if previous_seed is not None else settings.beauty_seed)
+    seed = int(request_data.seed) if request_data.seed is not None else (base_seed + 1)
+    analysis = state.get("analysis_result") or {}
+    request = BeautificationRequest(
+        image_b64=state["input_image_b64"],
+        params=state["final_params"],
+        src_prompt=analysis.get("source_description", "") if isinstance(analysis, dict) else "",
+        target_prompt=analysis.get("target_description", "") if isinstance(analysis, dict) else "",
+        edit_regions=analysis.get("edit_regions", []) if isinstance(analysis, dict) else [],
+        seed=seed,
+    )
+
+    try:
+        response = await bridge.apply_beautification(
+            request=request,
+            user_id=state.get("user_id", "anonymous"),
+            session_id=session_id,
+        )
+    except BridgeError as exc:
+        logger.error(f"Session {session_id}: rerun failed: {exc}")
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception(f"Session {session_id}: unexpected rerun failure")
+        raise HTTPException(status_code=502, detail=f"重跑失败: {exc}") from exc
+
+    history = list(state.get("rerun_history") or [])
+    history.append({
+        "attempt": rerun_count + 1,
+        "seed": seed,
+        "reason": request_data.reason,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "latency_ms": round(response.latency_ms, 1),
+    })
+    await graph.aupdate_state(config, {
+        "beautified_image_b64": response.image_b64,
+        "workflow_stage": "beautified",
+        "error_message": None,
+        "user_feedback": None,
+        "rerun_count": rerun_count + 1,
+        "current_seed": seed,
+        "rerun_history": history,
+    })
+    updated_state = await graph.aget_state(config)
+    logger.info(f"Session {session_id}: rerun completed (attempt={rerun_count + 1}, seed={seed})")
+    return _format_session_response(updated_state.values)
 
 
 @router.delete(

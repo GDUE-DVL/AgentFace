@@ -63,6 +63,8 @@ class AnalysisResult(TypedDict):
     suggested_params: BeautifyParams
     reasoning: str  # Human-readable explanation of the suggested params
     confidence: float  # 0.0 - 1.0
+    source_description: str  # English caption of the face (glasses, hair, gender, etc.)
+    target_description: str  # English target caption: same face but clearer/smoother skin
 
 
 class FeedbackData(TypedDict, total=False):
@@ -101,6 +103,10 @@ class BeautifyWorkflowState(TypedDict, total=False):
     # -- beautification phase --
     final_params: Optional[BeautifyParams]  # merged params to apply
     beautified_image_b64: Optional[str]  # base64 result
+    # -- human-in-the-loop reruns --
+    rerun_count: int
+    rerun_history: list[dict]
+    current_seed: Optional[int]
 
     # -- feedback phase --
     user_feedback: Optional[FeedbackData]
